@@ -2,59 +2,73 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Wealth Monitor - B3 & Gráficos</title>
+    <title>Wealth Monitor - Global Dash</title>
     <style>
         body { background-color: #050505; color: #e0e0e0; font-family: sans-serif; margin: 0; padding: 20px; }
         header { display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        
+        /* Grid de Cards do Topo */
+        .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .card { background: #111; border-radius: 10px; padding: 15px; border-left: 4px solid #333; }
         .symbol { font-size: 0.9rem; color: #888; font-weight: bold; }
         .price { font-size: 1.8rem; font-weight: bold; margin: 5px 0; color: #fff; }
-        .up { border-left-color: #00ff88; } .up .change { color: #00ff88; }
-        .down { border-left-color: #ff3e3e; } .down .change { color: #ff3e3e; }
-        .change { font-size: 1.1rem; font-weight: 600; }
-        #status { font-size: 0.8rem; color: #555; }
+        .up { border-left-color: #00ff88; color: #00ff88; }
+        .down { border-left-color: #ff3e3e; color: #ff3e3e; }
         
-        /* Container do Gráfico */
-        .chart-container { height: 450px; background: #111; border-radius: 12px; padding: 10px; border: 1px solid #222; }
+        /* Grid dos Gráficos Lado a Lado */
+        .grid-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 450px; }
+        .chart-box { background: #111; border-radius: 12px; padding: 10px; border: 1px solid #222; position: relative; }
+        .chart-label { position: absolute; top: 15px; left: 20px; z-index: 10; font-weight: bold; color: #5d3fd3; }
+
+        #status { font-size: 0.8rem; color: #555; }
     </style>
 </head>
 <body>
 
     <header>
         <h1 style="margin:0; font-size: 1.3rem; color: #5d3fd3;">WEALTH MONITOR</h1>
-        <div id="status">Sincronizando...</div>
+        <div id="status">Sincronizando Global Markets...</div>
     </header>
 
-    <div class="grid" id="painel"></div>
+    <div class="grid-cards" id="painel"></div>
 
-    <div class="chart-container">
-        <div class="tradingview-widget-container" style="height:100%;width:100%">
-    <div id="tradingview_ibov" style="height:100%;width:100%"></div>
+    <div class="grid-charts">
+        <div class="chart-box">
+            <div class="chart-label">IBOVESPA</div>
+            <div id="tv_ibov" style="height:100%;width:100%"></div>
+        </div>
+        <div class="chart-box">
+            <div class="chart-label">S&P 500</div>
+            <div id="tv_sp500" style="height:100%;width:100%"></div>
+        </div>
+    </div>
+
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script type="text/javascript">
-    new TradingView.widget({
-        "autosize": true,
-        "symbol": "BMFBOVESPA:IBOV",
-        "interval": "D",
-        "timezone": "America/Sao_Paulo",
-        "theme": "dark",
-        "style": "1", // O número "1" ativa o modo de Velas
-        "locale": "br",
-        "toolbar_bg": "#f1f3f6",
-        "enable_publishing": false,
-        "hide_top_toolbar": true, // Esconde ferramentas para economizar espaço na TV
-        "hide_legend": false,
-        "save_image": false,
-        "container_id": "tradingview_ibov"
-    });
-    </script>
-</div>
-        </div>
+        // Função para criar os widgets
+        function createWidget(container, symbol) {
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": symbol,
+                "interval": "D",
+                "timezone": "America/Sao_Paulo",
+                "theme": "dark",
+                "style": "1", // Velas (Candlesticks)
+                "locale": "br",
+                "hide_top_toolbar": true,
+                "hide_legend": false,
+                "save_image": false,
+                "container_id": container
+            });
+        }
 
-    <script>
+        // Inicializa os dois gráficos
+        createWidget("tv_ibov", "BMFBOVESPA:IBOV");
+        createWidget("tv_sp500", "SP500"); // S&P 500 CFD para tempo real gratuito
+
+        // Lógica da Brapi (Mesma que já funciona)
         const TOKEN = 'm3ZQCGwa6Nc5SLrvKUBn2v';
-        const TICKERS = ['IBOV11', 'IVVB11', 'GOLD11', 'BRL=x', 'BTC-USD'];
+        const TICKERS = ['BRL=X', 'IBOV11', 'IVVB11', 'GOLD11', 'BTC-USD'];
 
         async function fetchSingleAsset(ticker) {
             try {
@@ -66,13 +80,9 @@
 
         async function updateMarket() {
             const painelEl = document.getElementById('painel');
-            const statusEl = document.getElementById('status');
-            
             const promises = TICKERS.map(ticker => fetchSingleAsset(ticker));
             const results = await Promise.all(promises);
-
             painelEl.innerHTML = '';
-
             results.forEach(asset => {
                 if (!asset) return;
                 const isUp = asset.regularMarketChangePercent >= 0;
@@ -85,7 +95,7 @@
                 `;
                 painelEl.appendChild(card);
             });
-            statusEl.innerText = `LIVE • ${new Date().toLocaleTimeString()}`;
+            document.getElementById('status').innerText = `LIVE • ${new Date().toLocaleTimeString()}`;
         }
 
         updateMarket();
