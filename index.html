@@ -7,63 +7,74 @@
         body { background-color: #050505; color: #e0e0e0; font-family: sans-serif; margin: 0; padding: 30px; }
         header { display: flex; justify-content: space-between; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 30px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .card { background: #111; border-radius: 12px; padding: 25px; border-left: 6px solid #333; }
-        .symbol { font-size: 1.1rem; color: #888; }
-        .price { font-size: 2.8rem; font-weight: bold; margin: 10px 0; }
-        .up { border-left-color: #00ff88; color: #00ff88; }
-        .down { border-left-color: #ff3e3e; color: #ff3e3e; }
-        .price-white { color: #e0e0e0; }
-        #status { font-size: 0.9rem; color: #444; }
+        .card { background: #111; border-radius: 12px; padding: 25px; border-left: 6px solid #333; min-height: 120px; }
+        .symbol { font-size: 1.1rem; color: #888; font-weight: bold; }
+        .price { font-size: 2.5rem; font-weight: bold; margin: 10px 0; color: #fff; }
+        .up { border-left-color: #00ff88; } .up .change { color: #00ff88; }
+        .down { border-left-color: #ff3e3e; } .down .change { color: #ff3e3e; }
+        .change { font-size: 1.4rem; font-weight: 600; }
+        #status { font-size: 0.9rem; color: #555; }
     </style>
 </head>
 <body>
 
     <header>
         <h1 style="margin:0; font-size: 1.5rem; color: #5d3fd3;">WEALTH MONITOR</h1>
-        <div id="status">Verificando ativos...</div>
+        <div id="status">Sincronizando ativos...</div>
     </header>
 
     <div class="grid" id="painel"></div>
 
     <script>
         const TOKEN = 'm3ZQCGwa6Nc5SLrvKUBn2v';
-        // Tickers com o formato exato que a Brapi costuma aceitar
+        // Ativos indispensáveis para sua análise macro e dividendos
         const TICKERS = ['PETR4', 'VALE3', 'IVVB11', 'ITUB4', 'BTC-USD'];
+
+        async function fetchSingleAsset(ticker) {
+            try {
+                const response = await fetch(`https://brapi.dev/api/quote/${ticker}?token=${TOKEN}`);
+                const data = await response.json();
+                return data.results[0];
+            } catch (e) {
+                console.error("Erro ao buscar " + ticker, e);
+                return null;
+            }
+        }
 
         async function updateMarket() {
             const painelEl = document.getElementById('painel');
             const statusEl = document.getElementById('status');
             
-            // Tentamos buscar todos de uma vez, mas com tratamento de erro
-            try {
-                const response = await fetch(`https://brapi.dev/api/quote/${TICKERS.join(',')}?token=${TOKEN}`);
-                const data = await response.json();
+            // Avisa que está atualizando
+            statusEl.innerText = "Atualizando dados...";
+            
+            // Criamos uma lista de promessas (uma para cada ativo)
+            const promises = TICKERS.map(ticker => fetchSingleAsset(ticker));
+            const results = await Promise.all(promises);
 
-                if (!response.ok) throw new Error(data.message || 'Erro 400');
+            painelEl.innerHTML = ''; // Limpa o painel
 
-                painelEl.innerHTML = '';
-                data.results.forEach(asset => {
-                    const isUp = asset.regularMarketChangePercent >= 0;
-                    const card = document.createElement('div');
-                    card.className = `card ${isUp ? 'up' : 'down'}`;
-                    
-                    card.innerHTML = `
-                        <div class="symbol">${asset.symbol}</div>
-                        <div class="price price-white">R$ ${asset.regularMarketPrice.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
-                        <div class="change">${isUp ? '▲' : '▼'} ${asset.regularMarketChangePercent.toFixed(2)}%</div>
-                    `;
-                    painelEl.appendChild(card);
-                });
+            results.forEach(asset => {
+                if (!asset) return;
 
-                statusEl.innerText = `ON-LINE • ${new Date().toLocaleTimeString()}`;
-            } catch (err) {
-                statusEl.innerText = `ERRO: ${err.message}`;
-                console.error(err);
-            }
+                const isUp = asset.regularMarketChangePercent >= 0;
+                const card = document.createElement('div');
+                card.className = `card ${isUp ? 'up' : 'down'}`;
+                
+                card.innerHTML = `
+                    <div class="symbol">${asset.symbol}</div>
+                    <div class="price">R$ ${asset.regularMarketPrice.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                    <div class="change">${isUp ? '▲' : '▼'} ${asset.regularMarketChangePercent.toFixed(2)}%</div>
+                `;
+                painelEl.appendChild(card);
+            });
+
+            statusEl.innerText = `ON-LINE • Última carga: ${new Date().toLocaleTimeString()}`;
         }
 
+        // Inicia e define intervalo de 2 minutos (para respeitar o limite total de requisições do plano free)
         updateMarket();
-        setInterval(updateMarket, 60000);
+        setInterval(updateMarket, 120000);
     </script>
 </body>
 </html>
