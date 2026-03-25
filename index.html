@@ -7,24 +7,32 @@
     <style>
         :root { --bg: #050505; --card: #111; --accent: #5d3fd3; --up: #00ff88; --down: #ff3e3e; --text: #e0e0e0; }
         body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; box-sizing: border-box; }
+        
         header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0; }
         .controls { display: flex; gap: 8px; align-items: center; }
         input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 6px; border-radius: 4px; outline: none; width: 120px; font-size: 0.8rem; }
         button { background: var(--accent); border: none; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
+        
+        .refresh-btn { background: #1a1a1a; color: var(--accent); padding: 4px 8px; margin-left: 10px; border-radius: 4px; cursor: pointer; border: 1px solid #222; font-weight: bold; transition: 0.3s; }
+        .refresh-btn:hover { background: var(--accent); color: white; }
+        
         .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 10px; flex-shrink: 0; }
-        .card { background: var(--card); border-radius: 8px; padding: 12px; border-left: 4px solid #333; position: relative; }
+        .card { background: var(--card); border-radius: 8px; padding: 12px; border-left: 4px solid #333; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .remove-btn { position: absolute; top: 4px; right: 8px; color: #444; cursor: pointer; font-size: 0.7rem; }
         .symbol { font-size: 0.75rem; color: #888; font-weight: 700; text-transform: uppercase; }
         .price { font-size: 1.6rem; font-weight: 800; margin: 4px 0; color: #fff; }
+        
         .up { border-left-color: var(--up); } .up .change { color: var(--up); }
         .down { border-left-color: var(--down); } .down .change { color: var(--down); }
+
         .grid-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex-grow: 1; min-height: 0; }
         .chart-box { background: var(--card); border-radius: 8px; border: 1px solid #222; display: flex; flex-direction: column; overflow: hidden; }
         .chart-header { background: #18181b; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
         .chart-header span { font-weight: bold; font-size: 0.8rem; color: var(--accent); }
         .chart-wrapper { flex-grow: 1; width: 100%; }
+
         footer { text-align: center; padding: 8px 0; font-size: 0.75rem; color: #444; border-top: 1px solid #222; margin-top: 5px; flex-shrink: 0; }
-        footer a { color: #666; text-decoration: none; }
+        footer a { color: #666; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -32,11 +40,14 @@
     <header>
         <div class="controls">
             <h1 style="margin:0; font-size: 1rem; color: var(--accent);">WEALTH MONITOR</h1>
-            <input type="text" id="tickerInput" placeholder="Add Card (ex: VUAA)">
+            <input type="text" id="tickerInput" placeholder="Add Card (ex: PETR4)">
             <button onclick="addTicker()">+</button>
             <button onclick="resetTickers()" style="background:#333">RESET</button>
         </div>
-        <div id="status" style="font-size: 0.7rem; color: #444;">LIVE</div>
+        <div style="display: flex; align-items: center;">
+            <div id="status" style="font-size: 0.7rem; color: #555;">SINCRONIZANDO...</div>
+            <span class="refresh-btn" onclick="updateMarket()" title="Atualizar Agora">↻</span>
+        </div>
     </header>
 
     <div class="grid-cards" id="painel"></div>
@@ -45,14 +56,14 @@
         <div class="chart-box">
             <div class="chart-header">
                 <span>GRÁFICO 1</span>
-                <input type="text" id="inputChart1" placeholder="Ex: LSE:VUAA" onchange="changeChart(1, this.value)">
+                <input type="text" id="inputChart1" placeholder="Ex: VUAA" onchange="changeChart(1, this.value)">
             </div>
             <div id="tv_chart_1" class="chart-wrapper"></div>
         </div>
         <div class="chart-box">
             <div class="chart-header">
                 <span>GRÁFICO 2</span>
-                <input type="text" id="inputChart2" placeholder="Ex: AMEX:SPY" onchange="changeChart(2, this.value)">
+                <input type="text" id="inputChart2" placeholder="Ex: SPY" onchange="changeChart(2, this.value)">
             </div>
             <div id="tv_chart_2" class="chart-wrapper"></div>
         </div>
@@ -65,22 +76,15 @@
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
         const TOKEN = 'm3ZQCGwa6Nc5SLrvKUBn2v';
-        let myTickers = JSON.parse(localStorage.getItem('myTickers')) || ['BRL=X', 'EWZ', 'IVVB11', 'GOLD11', 'BTC-USD', 'VOO'];
+        let myTickers = JSON.parse(localStorage.getItem('myTickers')) || ['BRL=X', 'EWZ', 'IVVB11', 'GOLD11', 'BTC-USD', 'VOO', 'VUAA'];
 
         function loadChart(container, symbol) {
             let finalSymbol = symbol.toUpperCase().trim();
-            
-            // Lista de exceções globais (UCITS, US, Crypto)
             const globalExchanges = ['NYSE:', 'NASDAQ:', 'AMEX:', 'FX:', 'LSE:', 'MIL:', 'Euronext:', 'BINANCE:', 'SPX', 'SPY', 'VOO', 'IVV', 'VUAA', 'VUSA', 'BTC'];
             const isGlobal = globalExchanges.some(ex => finalSymbol.includes(ex));
 
-            // Se não tiver prefixo e for VUAA, forçamos Londres (LSE) que é o mais comum para UCITS
             if (finalSymbol === 'VUAA') finalSymbol = 'LSE:VUAA';
-            
-            // Se não for global e não tiver prefixo, assume B3
-            if (!finalSymbol.includes(':') && !isGlobal) {
-                finalSymbol = `BMFBOVESPA:${finalSymbol}`;
-            }
+            if (!finalSymbol.includes(':') && !isGlobal) finalSymbol = `BMFBOVESPA:${finalSymbol}`;
 
             new TradingView.widget({
                 "autosize": true,
@@ -95,9 +99,7 @@
             });
         }
 
-        function changeChart(id, value) {
-            if (value) loadChart(`tv_chart_${id}`, value);
-        }
+        function changeChart(id, value) { if (value) loadChart(`tv_chart_${id}`, value); }
 
         loadChart("tv_chart_1", "IBOV");
         loadChart("tv_chart_2", "SPY");
@@ -113,21 +115,23 @@
 
         async function updateMarket() {
             const painelEl = document.getElementById('painel');
+            const statusEl = document.getElementById('status');
+            statusEl.innerText = "ATUALIZANDO...";
+            
             const results = await Promise.all(myTickers.map(t => fetchAsset(t)));
             painelEl.innerHTML = '';
+            
             results.forEach((asset, index) => {
                 if (!asset) return;
                 const isUp = asset.regularMarketChangePercent >= 0;
-                
-                // Lógica de moeda: VUAA e outros globais costumam vir em USD ou EUR
-                let currency = (asset.currency === 'USD' || asset.symbol.includes('USD') || asset.symbol === 'VUAA' || asset.symbol === 'VOO') ? 'US$' : 'R$';
+                let currency = (asset.currency === 'USD' || asset.symbol.includes('USD') || asset.symbol === 'VUAA' || asset.symbol === 'EWZ' || asset.symbol === 'VOO') ? 'US$' : 'R$';
                 
                 const card = document.createElement('div');
                 card.className = `card ${isUp ? 'up' : 'down'}`;
                 card.innerHTML = `<div class="remove-btn" onclick="removeTicker('${myTickers[index]}')">✖</div><div class="symbol">${asset.symbol}</div><div class="price">${currency} ${asset.regularMarketPrice.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div><div class="change">${isUp ? '▲' : '▼'} ${Math.abs(asset.regularMarketChangePercent).toFixed(2)}%</div>`;
                 painelEl.appendChild(card);
             });
-            document.getElementById('status').innerText = `LIVE • ${new Date().toLocaleTimeString('pt-BR')}`;
+            statusEl.innerText = `LIVE • ${new Date().toLocaleTimeString('pt-BR')}`;
         }
 
         function addTicker() {
@@ -140,15 +144,12 @@
             }
         }
 
-        function removeTicker(ticker) {
-            myTickers = myTickers.filter(t => t !== ticker);
-            saveAndRefresh();
-        }
-
+        function removeTicker(ticker) { myTickers = myTickers.filter(t => t !== ticker); saveAndRefresh(); }
         function resetTickers() { localStorage.removeItem('myTickers'); location.reload(); }
         function saveAndRefresh() { localStorage.setItem('myTickers', JSON.stringify(myTickers)); updateMarket(); }
 
         updateMarket();
+        // INTERVALO VOLTOU PARA 2 MINUTOS (120000ms)
         setInterval(updateMarket, 120000);
     </script>
 </body>
