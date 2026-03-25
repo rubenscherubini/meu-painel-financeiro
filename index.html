@@ -13,7 +13,12 @@
         input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 6px; border-radius: 4px; outline: none; width: 120px; font-size: 0.8rem; }
         button { background: var(--accent); border: none; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
         
-        .refresh-btn { background: #1a1a1a; color: var(--accent); padding: 4px 8px; margin-left: 10px; border-radius: 4px; cursor: pointer; border: 1px solid #222; font-weight: bold; transition: 0.3s; }
+        .status-container { display: flex; align-items: center; gap: 15px; text-align: right; }
+        .time-info { display: flex; flex-direction: column; line-height: 1.2; }
+        #live-clock { font-size: 0.85rem; color: var(--accent); font-weight: bold; font-family: monospace; }
+        #last-update { font-size: 0.65rem; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        .refresh-btn { background: #1a1a1a; color: var(--accent); padding: 5px 10px; border-radius: 4px; cursor: pointer; border: 1px solid #222; font-weight: bold; }
         .refresh-btn:hover { background: var(--accent); color: white; }
         
         .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 10px; flex-shrink: 0; }
@@ -21,7 +26,6 @@
         .remove-btn { position: absolute; top: 4px; right: 8px; color: #444; cursor: pointer; font-size: 0.7rem; }
         .symbol { font-size: 0.75rem; color: #888; font-weight: 700; text-transform: uppercase; }
         .price { font-size: 1.6rem; font-weight: 800; margin: 4px 0; color: #fff; }
-        
         .up { border-left-color: var(--up); } .up .change { color: var(--up); }
         .down { border-left-color: var(--down); } .down .change { color: var(--down); }
 
@@ -44,8 +48,11 @@
             <button onclick="addTicker()">+</button>
             <button onclick="resetTickers()" style="background:#333">RESET</button>
         </div>
-        <div style="display: flex; align-items: center;">
-            <div id="status" style="font-size: 0.7rem; color: #555;">SINCRONIZANDO...</div>
+        <div class="status-container">
+            <div class="time-info">
+                <div id="live-clock">--/--/---- --:--:--</div>
+                <div id="last-update">AGUARDANDO PRIMEIRA CARGA...</div>
+            </div>
             <span class="refresh-btn" onclick="updateMarket()" title="Atualizar Agora">↻</span>
         </div>
     </header>
@@ -78,29 +85,28 @@
         const TOKEN = 'm3ZQCGwa6Nc5SLrvKUBn2v';
         let myTickers = JSON.parse(localStorage.getItem('myTickers')) || ['BRL=X', 'EWZ', 'IVVB11', 'GOLD11', 'BTC-USD', 'VOO', 'VUAA'];
 
+        // RELÓGIO LIVE (SEGUNDO A SEGUNDO)
+        function updateLiveClock() {
+            const now = new Date();
+            document.getElementById('live-clock').innerText = `LIVE: ${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR')}`;
+        }
+        setInterval(updateLiveClock, 1000);
+        updateLiveClock();
+
         function loadChart(container, symbol) {
             let finalSymbol = symbol.toUpperCase().trim();
             const globalExchanges = ['NYSE:', 'NASDAQ:', 'AMEX:', 'FX:', 'LSE:', 'MIL:', 'Euronext:', 'BINANCE:', 'SPX', 'SPY', 'VOO', 'IVV', 'VUAA', 'VUSA', 'BTC'];
             const isGlobal = globalExchanges.some(ex => finalSymbol.includes(ex));
-
             if (finalSymbol === 'VUAA') finalSymbol = 'LSE:VUAA';
             if (!finalSymbol.includes(':') && !isGlobal) finalSymbol = `BMFBOVESPA:${finalSymbol}`;
 
             new TradingView.widget({
-                "autosize": true,
-                "symbol": finalSymbol,
-                "interval": "D",
-                "timezone": "America/Sao_Paulo",
-                "theme": "dark",
-                "style": "1",
-                "locale": "br",
-                "hide_top_toolbar": true,
-                "container_id": container
+                "autosize": true, "symbol": finalSymbol, "interval": "D", "timezone": "America/Sao_Paulo",
+                "theme": "dark", "style": "1", "locale": "br", "hide_top_toolbar": true, "container_id": container
             });
         }
 
         function changeChart(id, value) { if (value) loadChart(`tv_chart_${id}`, value); }
-
         loadChart("tv_chart_1", "IBOV");
         loadChart("tv_chart_2", "SPY");
 
@@ -115,9 +121,6 @@
 
         async function updateMarket() {
             const painelEl = document.getElementById('painel');
-            const statusEl = document.getElementById('status');
-            statusEl.innerText = "ATUALIZANDO...";
-            
             const results = await Promise.all(myTickers.map(t => fetchAsset(t)));
             painelEl.innerHTML = '';
             
@@ -131,7 +134,10 @@
                 card.innerHTML = `<div class="remove-btn" onclick="removeTicker('${myTickers[index]}')">✖</div><div class="symbol">${asset.symbol}</div><div class="price">${currency} ${asset.regularMarketPrice.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div><div class="change">${isUp ? '▲' : '▼'} ${Math.abs(asset.regularMarketChangePercent).toFixed(2)}%</div>`;
                 painelEl.appendChild(card);
             });
-            statusEl.innerText = `LIVE • ${new Date().toLocaleTimeString('pt-BR')}`;
+            
+            // ATUALIZA O LABEL DE "ÚLTIMA ATUALIZAÇÃO"
+            const now = new Date();
+            document.getElementById('last-update').innerText = `ÚLTIMA ATUALIZAÇÃO: ${now.toLocaleTimeString('pt-BR')}`;
         }
 
         function addTicker() {
@@ -149,7 +155,6 @@
         function saveAndRefresh() { localStorage.setItem('myTickers', JSON.stringify(myTickers)); updateMarket(); }
 
         updateMarket();
-        // INTERVALO VOLTOU PARA 2 MINUTOS (120000ms)
         setInterval(updateMarket, 120000);
     </script>
 </body>
