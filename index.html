@@ -3,24 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wealth Monitor - Global Dashboard</title>
+    <title>Wealth Monitor - Interactive Terminal</title>
     <style>
         :root { --bg: #050505; --card: #111; --accent: #5d3fd3; --up: #00ff88; --down: #ff3e3e; --text: #e0e0e0; }
         body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; overflow: hidden; }
+        
         header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 20px; }
-        h1 { margin: 0; font-size: 1.4rem; color: var(--accent); letter-spacing: 1px; }
-        #status { font-size: 0.85rem; color: #555; font-weight: bold; }
+        .controls { display: flex; gap: 10px; align-items: center; }
+        input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 8px; border-radius: 5px; outline: none; }
+        button { background: var(--accent); border: none; color: white; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { opacity: 0.8; }
 
         .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .card { background: var(--card); border-radius: 12px; padding: 18px; border-left: 5px solid #333; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .card { background: var(--card); border-radius: 12px; padding: 18px; border-left: 5px solid #333; position: relative; }
+        .remove-btn { position: absolute; top: 5px; right: 10px; color: #444; cursor: pointer; font-size: 0.8rem; }
         .symbol { font-size: 0.9rem; color: #888; font-weight: 700; text-transform: uppercase; }
         .price { font-size: 2.1rem; font-weight: 800; margin: 8px 0; color: #fff; letter-spacing: -1px; }
-        .change { font-size: 1.3rem; font-weight: 600; }
-        
         .up { border-left-color: var(--up); } .up .change { color: var(--up); }
         .down { border-left-color: var(--down); } .down .change { color: var(--down); }
 
-        .grid-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 52vh; }
+        .grid-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; height: 50vh; }
         .chart-box { background: var(--card); border-radius: 12px; border: 1px solid #222; display: flex; flex-direction: column; overflow: hidden; }
         .chart-header { background: #18181b; padding: 12px 20px; font-weight: bold; font-size: 1rem; color: var(--accent); border-bottom: 1px solid #222; }
         .chart-wrapper { flex-grow: 1; width: 100%; }
@@ -29,49 +31,38 @@
 <body>
 
     <header>
-        <h1>WEALTH MONITOR • GLOBAL</h1>
-        <div id="status">SINCRONIZANDO...</div>
+        <div class="controls">
+            <h1>WEALTH MONITOR</h1>
+            <input type="text" id="tickerInput" placeholder="Ex: VALE3, PETR4...">
+            <button onclick="addTicker()">ADICIONAR</button>
+            <button onclick="resetTickers()" style="background:#333">RESET</button>
+        </div>
+        <div id="status" style="font-size: 0.8rem; color: #555;">AGUARDANDO...</div>
     </header>
 
     <div class="grid-cards" id="painel"></div>
 
     <div class="grid-charts">
-        <div class="chart-box">
-            <div class="chart-header">IBOVESPA (B3)</div>
-            <div id="tv_ibov" class="chart-wrapper"></div>
-        </div>
-        <div class="chart-box">
-            <div class="chart-header">S&P 500 (EUA)</div>
-            <div id="tv_sp500" class="chart-wrapper"></div>
-        </div>
+        <div class="chart-box"><div class="chart-header">IBOVESPA</div><div id="tv_ibov" class="chart-wrapper"></div></div>
+        <div class="chart-box"><div class="chart-header">S&P 500</div><div id="tv_sp500" class="chart-wrapper"></div></div>
     </div>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
-    <script type="text/javascript">
-        // 1. Gráficos TradingView
+    <script>
+        const TOKEN = 'm3ZQCGwa6Nc5SLrvKUBn2v';
+        let myTickers = JSON.parse(localStorage.getItem('myTickers')) || ['BRL=X', 'EWZ', 'IVVB11', 'GOLD11', 'BTC-USD'];
+
         function createChart(container, symbol) {
             new TradingView.widget({
-                "autosize": true,
-                "symbol": symbol,
-                "interval": "D",
-                "timezone": "America/Sao_Paulo",
-                "theme": "dark",
-                "style": "1", // Velas
-                "locale": "br",
-                "hide_top_toolbar": true,
-                "hide_legend": false,
-                "container_id": container
+                "autosize": true, "symbol": symbol, "interval": "D", "timezone": "America/Sao_Paulo",
+                "theme": "dark", "style": "1", "locale": "br", "hide_top_toolbar": true, "container_id": container
             });
         }
 
         createChart("tv_ibov", "BMFBOVESPA:IBOV");
-        createChart("tv_sp500", "AMEX:SPY"); // SPY é o rastreador mais fiel do S&P 500
+        createChart("tv_sp500", "AMEX:SPY");
 
-        // 2. Cotações Brapi
-        const TOKEN = 'm3ZQCGwa6Nc5SLrvKUBn2v';
-        const TICKERS = ['BRL=X', 'EWZ', 'IVVB11', 'GOLD11', 'BTC-USD'];
-
-        async function fetchSingleAsset(ticker) {
+        async function fetchAsset(ticker) {
             try {
                 await new Promise(r => setTimeout(r, 400));
                 const response = await fetch(`https://brapi.dev/api/quote/${ticker}?token=${TOKEN}`);
@@ -82,37 +73,50 @@
 
         async function updateMarket() {
             const painelEl = document.getElementById('painel');
-            const statusEl = document.getElementById('status');
-            statusEl.innerText = "ATUALIZANDO...";
-            
-            const promises = TICKERS.map(ticker => fetchSingleAsset(ticker));
-            const results = await Promise.all(promises);
-
+            const results = await Promise.all(myTickers.map(t => fetchAsset(t)));
             painelEl.innerHTML = '';
 
-            results.forEach(asset => {
+            results.forEach((asset, index) => {
                 if (!asset) return;
-
                 const isUp = asset.regularMarketChangePercent >= 0;
+                let currency = (asset.symbol === 'EWZ' || asset.symbol === 'BTC-USD') ? 'US$' : 'R$';
                 
-                // Lógica de Moeda Solicitada
-                // EWZ e BTC-USD aparecem em Dólar (US$)
-                let currencySymbol = 'R$';
-                if (asset.symbol === 'EWZ' || asset.symbol === 'BTC-USD') {
-                    currencySymbol = 'US$';
-                }
-
                 const card = document.createElement('div');
                 card.className = `card ${isUp ? 'up' : 'down'}`;
                 card.innerHTML = `
+                    <div class="remove-btn" onclick="removeTicker('${myTickers[index]}')">✖</div>
                     <div class="symbol">${asset.symbol}</div>
-                    <div class="price">${currencySymbol} ${asset.regularMarketPrice.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
+                    <div class="price">${currency} ${asset.regularMarketPrice.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div>
                     <div class="change">${isUp ? '▲' : '▼'} ${Math.abs(asset.regularMarketChangePercent).toFixed(2)}%</div>
                 `;
                 painelEl.appendChild(card);
             });
+            document.getElementById('status').innerText = `LIVE • ${new Date().toLocaleTimeString('pt-BR')}`;
+        }
 
-            statusEl.innerText = `LIVE • ${new Date().toLocaleTimeString('pt-BR')}`;
+        function addTicker() {
+            const input = document.getElementById('tickerInput');
+            const newTicker = input.value.toUpperCase().trim();
+            if (newTicker && !myTickers.includes(newTicker)) {
+                myTickers.push(newTicker);
+                saveAndRefresh();
+                input.value = '';
+            }
+        }
+
+        function removeTicker(ticker) {
+            myTickers = myTickers.filter(t => t !== ticker);
+            saveAndRefresh();
+        }
+
+        function resetTickers() {
+            localStorage.removeItem('myTickers');
+            location.reload();
+        }
+
+        function saveAndRefresh() {
+            localStorage.setItem('myTickers', JSON.stringify(myTickers));
+            updateMarket();
         }
 
         updateMarket();
