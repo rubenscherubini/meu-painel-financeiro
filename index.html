@@ -6,36 +6,35 @@
     <title>Wealth Monitor - Rubens Cherubini Alves</title>
     <style>
         :root { --bg: #050505; --card: #111; --accent: #5d3fd3; --up: #00ff88; --down: #ff3e3e; --text: #e0e0e0; }
-        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 15px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; box-sizing: border-box; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 10px 15px; display: flex; flex-direction: column; height: 100vh; overflow: hidden; box-sizing: border-box; }
         
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 8px; margin-bottom: 8px; flex-shrink: 0; }
         .controls { display: flex; gap: 8px; align-items: center; }
-        input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 6px; border-radius: 4px; outline: none; width: 120px; font-size: 0.8rem; }
-        button { background: var(--accent); border: none; color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
+        input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 5px; border-radius: 4px; outline: none; width: 110px; font-size: 0.75rem; }
+        button { background: var(--accent); border: none; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75rem; }
         
-        .status-container { display: flex; align-items: center; gap: 15px; text-align: right; }
-        .time-info { display: flex; flex-direction: column; line-height: 1.2; }
-        #live-clock { font-size: 0.85rem; color: var(--accent); font-weight: bold; font-family: monospace; }
-        #last-update { font-size: 0.65rem; color: #555; text-transform: uppercase; letter-spacing: 0.5px; }
+        .status-container { display: flex; align-items: center; gap: 12px; text-align: right; }
+        .time-info { display: flex; flex-direction: column; line-height: 1.1; }
+        #live-clock { font-size: 0.8rem; color: var(--accent); font-weight: bold; font-family: monospace; }
+        #last-update { font-size: 0.6rem; color: #555; text-transform: uppercase; }
         
-        .refresh-btn { background: #1a1a1a; color: var(--accent); padding: 5px 10px; border-radius: 4px; cursor: pointer; border: 1px solid #222; font-weight: bold; }
-        .refresh-btn:hover { background: var(--accent); color: white; }
-        
-        .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 10px; flex-shrink: 0; }
-        .card { background: var(--card); border-radius: 8px; padding: 12px; border-left: 4px solid #333; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .remove-btn { position: absolute; top: 4px; right: 8px; color: #444; cursor: pointer; font-size: 0.7rem; }
-        .symbol { font-size: 0.75rem; color: #888; font-weight: 700; text-transform: uppercase; }
-        .price { font-size: 1.6rem; font-weight: 800; margin: 4px 0; color: #fff; }
+        .refresh-btn { background: #1a1a1a; color: var(--accent); padding: 4px 8px; border-radius: 4px; cursor: pointer; border: 1px solid #222; font-weight: bold; }
+
+        .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin-bottom: 8px; flex-shrink: 0; }
+        .card { background: var(--card); border-radius: 6px; padding: 10px; border-left: 4px solid #333; position: relative; }
+        .symbol { font-size: 0.7rem; color: #888; font-weight: 700; text-transform: uppercase; }
+        .price { font-size: 1.4rem; font-weight: 800; margin: 2px 0; color: #fff; }
+        .change { font-size: 0.9rem; font-weight: 600; }
         .up { border-left-color: var(--up); } .up .change { color: var(--up); }
         .down { border-left-color: var(--down); } .down .change { color: var(--down); }
 
-        .grid-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; flex-grow: 1; min-height: 0; }
-        .chart-box { background: var(--card); border-radius: 8px; border: 1px solid #222; display: flex; flex-direction: column; overflow: hidden; }
-        .chart-header { background: #18181b; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
-        .chart-header span { font-weight: bold; font-size: 0.8rem; color: var(--accent); }
+        .grid-charts { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; flex-grow: 1; min-height: 0; }
+        .chart-box { background: var(--card); border-radius: 6px; border: 1px solid #222; display: flex; flex-direction: column; overflow: hidden; }
+        .chart-header { background: #18181b; padding: 5px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
+        .chart-header span { font-weight: bold; font-size: 0.75rem; color: var(--accent); }
         .chart-wrapper { flex-grow: 1; width: 100%; }
 
-        footer { text-align: center; padding: 8px 0; font-size: 0.75rem; color: #444; border-top: 1px solid #222; margin-top: 5px; flex-shrink: 0; }
+        footer { text-align: center; padding: 5px 0; font-size: 0.7rem; color: #444; border-top: 1px solid #222; margin-top: 5px; flex-shrink: 0; }
         footer a { color: #666; text-decoration: none; font-weight: bold; }
     </style>
 </head>
@@ -43,17 +42,17 @@
 
     <header>
         <div class="controls">
-            <h1 style="margin:0; font-size: 1rem; color: var(--accent);">WEALTH MONITOR</h1>
-            <input type="text" id="tickerInput" placeholder="Add Card (ex: PETR4)">
+            <h1 style="margin:0; font-size: 0.9rem; color: var(--accent);">WEALTH MONITOR</h1>
+            <input type="text" id="tickerInput" placeholder="Add Card">
             <button onclick="addTicker()">+</button>
             <button onclick="resetTickers()" style="background:#333">RESET</button>
         </div>
         <div class="status-container">
             <div class="time-info">
                 <div id="live-clock">--/--/---- --:--:--</div>
-                <div id="last-update">AGUARDANDO PRIMEIRA CARGA...</div>
+                <div id="last-update">CARREGANDO...</div>
             </div>
-            <span class="refresh-btn" onclick="updateMarket()" title="Atualizar Agora">↻</span>
+            <span class="refresh-btn" onclick="updateMarket()">↻</span>
         </div>
     </header>
 
@@ -61,18 +60,20 @@
 
     <div class="grid-charts">
         <div class="chart-box">
-            <div class="chart-header">
-                <span>GRÁFICO 1</span>
-                <input type="text" id="inputChart1" placeholder="Ex: VUAA" onchange="changeChart(1, this.value)">
-            </div>
+            <div class="chart-header"><span>GRÁFICO 1</span><input type="text" placeholder="Ticker..." onchange="changeChart(1, this.value)"></div>
             <div id="tv_chart_1" class="chart-wrapper"></div>
         </div>
         <div class="chart-box">
-            <div class="chart-header">
-                <span>GRÁFICO 2</span>
-                <input type="text" id="inputChart2" placeholder="Ex: SPY" onchange="changeChart(2, this.value)">
-            </div>
+            <div class="chart-header"><span>GRÁFICO 2</span><input type="text" placeholder="Ticker..." onchange="changeChart(2, this.value)"></div>
             <div id="tv_chart_2" class="chart-wrapper"></div>
+        </div>
+        <div class="chart-box">
+            <div class="chart-header"><span>GRÁFICO 3</span><input type="text" placeholder="Ticker..." onchange="changeChart(3, this.value)"></div>
+            <div id="tv_chart_3" class="chart-wrapper"></div>
+        </div>
+        <div class="chart-box">
+            <div class="chart-header"><span>GRÁFICO 4</span><input type="text" placeholder="Ticker..." onchange="changeChart(4, this.value)"></div>
+            <div id="tv_chart_4" class="chart-wrapper"></div>
         </div>
     </div>
 
@@ -83,9 +84,8 @@
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
         const TOKEN = 'm3ZQCGwa6Nc5SLrvKUBn2v';
-        let myTickers = JSON.parse(localStorage.getItem('myTickers')) || ['BRL=X', 'EWZ', 'IVVB11', 'GOLD11', 'BTC-USD', 'VOO', 'VUAA'];
+        let myTickers = JSON.parse(localStorage.getItem('myTickers')) || ['BRL=X', 'EWZ', 'IVVB11', 'GOLD11', 'BTC-USD', 'VOO', 'VUAA', 'ENEV3'];
 
-        // RELÓGIO LIVE (SEGUNDO A SEGUNDO)
         function updateLiveClock() {
             const now = new Date();
             document.getElementById('live-clock').innerText = `LIVE: ${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR')}`;
@@ -97,6 +97,7 @@
             let finalSymbol = symbol.toUpperCase().trim();
             const globalExchanges = ['NYSE:', 'NASDAQ:', 'AMEX:', 'FX:', 'LSE:', 'MIL:', 'Euronext:', 'BINANCE:', 'SPX', 'SPY', 'VOO', 'IVV', 'VUAA', 'VUSA', 'BTC'];
             const isGlobal = globalExchanges.some(ex => finalSymbol.includes(ex));
+            
             if (finalSymbol === 'VUAA') finalSymbol = 'LSE:VUAA';
             if (!finalSymbol.includes(':') && !isGlobal) finalSymbol = `BMFBOVESPA:${finalSymbol}`;
 
@@ -107,8 +108,12 @@
         }
 
         function changeChart(id, value) { if (value) loadChart(`tv_chart_${id}`, value); }
+
+        // Inicialização dos 4 gráficos conforme solicitado
         loadChart("tv_chart_1", "IBOV");
         loadChart("tv_chart_2", "SPY");
+        loadChart("tv_chart_3", "BTCUSD");
+        loadChart("tv_chart_4", "ENEV3"); // Configurado para Eneva
 
         async function fetchAsset(ticker) {
             try {
@@ -123,21 +128,16 @@
             const painelEl = document.getElementById('painel');
             const results = await Promise.all(myTickers.map(t => fetchAsset(t)));
             painelEl.innerHTML = '';
-            
             results.forEach((asset, index) => {
                 if (!asset) return;
                 const isUp = asset.regularMarketChangePercent >= 0;
                 let currency = (asset.currency === 'USD' || asset.symbol.includes('USD') || asset.symbol === 'VUAA' || asset.symbol === 'EWZ' || asset.symbol === 'VOO') ? 'US$' : 'R$';
-                
                 const card = document.createElement('div');
                 card.className = `card ${isUp ? 'up' : 'down'}`;
-                card.innerHTML = `<div class="remove-btn" onclick="removeTicker('${myTickers[index]}')">✖</div><div class="symbol">${asset.symbol}</div><div class="price">${currency} ${asset.regularMarketPrice.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div><div class="change">${isUp ? '▲' : '▼'} ${Math.abs(asset.regularMarketChangePercent).toFixed(2)}%</div>`;
+                card.innerHTML = `<div class="symbol">${asset.symbol}</div><div class="price">${currency} ${asset.regularMarketPrice.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</div><div class="change">${isUp ? '▲' : '▼'} ${Math.abs(asset.regularMarketChangePercent).toFixed(2)}%</div>`;
                 painelEl.appendChild(card);
             });
-            
-            // ATUALIZA O LABEL DE "ÚLTIMA ATUALIZAÇÃO"
-            const now = new Date();
-            document.getElementById('last-update').innerText = `ÚLTIMA ATUALIZAÇÃO: ${now.toLocaleTimeString('pt-BR')}`;
+            document.getElementById('last-update').innerText = `ÚLTIMA ATUALIZAÇÃO: ${new Date().toLocaleTimeString('pt-BR')}`;
         }
 
         function addTicker() {
@@ -145,17 +145,15 @@
             const newTicker = input.value.toUpperCase().trim();
             if (newTicker && !myTickers.includes(newTicker)) {
                 myTickers.push(newTicker);
-                saveAndRefresh();
+                localStorage.setItem('myTickers', JSON.stringify(myTickers));
+                updateMarket();
                 input.value = '';
             }
         }
 
-        function removeTicker(ticker) { myTickers = myTickers.filter(t => t !== ticker); saveAndRefresh(); }
         function resetTickers() { localStorage.removeItem('myTickers'); location.reload(); }
-        function saveAndRefresh() { localStorage.setItem('myTickers', JSON.stringify(myTickers)); updateMarket(); }
 
         updateMarket();
         setInterval(updateMarket, 120000);
     </script>
 </body>
-</html>
