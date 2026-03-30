@@ -23,7 +23,7 @@
             flex-wrap: wrap; 
             gap: 25px; 
             justify-content: center; 
-            padding: 20px 0 50px;
+            padding: 10px 0 50px;
         }
 
         header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 8px; margin-bottom: 8px; flex-shrink: 0; }
@@ -43,7 +43,6 @@
         .chart-header input { width: 70px; height: 18px; font-size: 0.6rem; background: #000; }
         .chart-wrapper { flex-grow: 1; }
 
-        /* Largura aumentada para 800px conforme solicitado */
         .widget-wrapper-b3 { 
             width: 100%;
             max-width: 800px; 
@@ -53,6 +52,8 @@
             overflow: hidden; 
             background: #131722; 
         }
+        .search-group { display: flex; gap: 5px; background: #111; padding: 5px; border-radius: 6px; border: 1px solid #333; }
+        .search-label { font-size: 0.6rem; color: #666; font-weight: bold; text-transform: uppercase; margin-bottom: 2px; }
     </style>
 </head>
 <body>
@@ -99,9 +100,22 @@
 
     <div id="tab2" class="tab-content">
         <header>
-            <div class="controls">
-                <span style="font-size: 0.8rem; color: var(--accent); font-weight: bold;">CARTEIRA B3: AÇÕES & FIIs</span>
-                <button onclick="location.reload()" style="background:#333">RECARREGAR</button>
+            <div class="controls" style="gap: 20px;">
+                <div class="search-group">
+                    <div>
+                        <div class="search-label">Ações</div>
+                        <input type="text" id="inputAcoes" placeholder="Ex: PETR4">
+                    </div>
+                    <button onclick="addToTable('acoes')" style="margin-top: 12px;">+</button>
+                </div>
+                <div class="search-group">
+                    <div>
+                        <div class="search-label">FIIs / Outros</div>
+                        <input type="text" id="inputFiis" placeholder="Ex: HGLG11">
+                    </div>
+                    <button onclick="addToTable('fiis')" style="margin-top: 12px;">+</button>
+                </div>
+                <button onclick="resetTab2()" style="background:#333; height: 35px; margin-top: 5px;">RESET TAB 2</button>
             </div>
         </header>
         <div class="tables-container">
@@ -112,10 +126,15 @@
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
+        // Aba 1
         let cardsList = JSON.parse(localStorage.getItem('cardsList')) || ["FX_IDC:USDBRL", "BMFBOVESPA:IBOV", "AMEX:EWZ", "BMFBOVESPA:IVVB11", "AMEX:SPY", "BINANCE:BTCUSDT", "BMFBOVESPA:GOLD11"];
-        
-        const listaAcoes = ["BMFBOVESPA:ENEV3", "BMFBOVESPA:GGPS3", "BMFBOVESPA:EQTL3", "BMFBOVESPA:ALUP11", "BMFBOVESPA:RENT3", "BMFBOVESPA:RENT4", "BMFBOVESPA:RDOR3", "BMFBOVESPA:IGTI11"];
-        const listaFiis = ["BMFBOVESPA:KFOF11", "BMFBOVESPA:HGBS11", "BMFBOVESPA:KDOF11", "BMFBOVESPA:HLOG11", "BMFBOVESPA:CJCT11", "BMFBOVESPA:PPEI11", "BMFBOVESPA:HRDF11", "BMFBOVESPA:SEED11", "BMFBOVESPA:BDIV11", "BMFBOVESPA:KNHY11", "BMFBOVESPA:RPRI11", "BMFBOVESPA:CDHY16"];
+
+        // Aba 2 - Listas Persistentes
+        const defAcoes = ["BMFBOVESPA:ENEV3", "BMFBOVESPA:GGPS3", "BMFBOVESPA:EQTL3", "BMFBOVESPA:ALUP11", "BMFBOVESPA:RENT3", "BMFBOVESPA:RENT4", "BMFBOVESPA:RDOR3", "BMFBOVESPA:IGTI11"];
+        const defFiis = ["BMFBOVESPA:KFOF11", "BMFBOVESPA:HGBS11", "BMFBOVESPA:KDOF11", "BMFBOVESPA:HLOG11", "BMFBOVESPA:CJCT11", "BMFBOVESPA:PPEI11", "BMFBOVESPA:HRDF11", "BMFBOVESPA:SEED11", "BMFBOVESPA:BDIV11", "BMFBOVESPA:KNHY11", "BMFBOVESPA:RPRI11", "BMFBOVESPA:CDHY16"];
+
+        let listaAcoes = JSON.parse(localStorage.getItem('listaAcoes')) || defAcoes;
+        let listaFiis = JSON.parse(localStorage.getItem('listaFiis')) || defFiis;
 
         function openTab(evt, tabName) {
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
@@ -150,6 +169,19 @@
             });
         }
 
+        function addCard() {
+            const val = document.getElementById('inputCard').value.toUpperCase().trim();
+            if (val) {
+                const f = (val.length <= 6 && !val.includes(':')) ? `BMFBOVESPA:${val}` : val;
+                cardsList.push(f);
+                localStorage.setItem('cardsList', JSON.stringify(cardsList));
+                renderCards();
+                document.getElementById('inputCard').value = '';
+            }
+        }
+        function resetCards() { localStorage.removeItem('cardsList'); location.reload(); }
+
+        // Aba 2 Functions
         function renderTable(containerId, title, list) {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
@@ -162,6 +194,30 @@
                 "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "locale": "br"
             });
             container.appendChild(script);
+        }
+
+        function addToTable(type) {
+            const inputId = type === 'acoes' ? 'inputAcoes' : 'inputFiis';
+            const val = document.getElementById(inputId).value.toUpperCase().trim();
+            if (val) {
+                const f = val.includes(':') ? val : `BMFBOVESPA:${val}`;
+                if (type === 'acoes') {
+                    listaAcoes.push(f);
+                    localStorage.setItem('listaAcoes', JSON.stringify(listaAcoes));
+                    renderTable("container-acoes", "AÇÕES", listaAcoes);
+                } else {
+                    listaFiis.push(f);
+                    localStorage.setItem('listaFiis', JSON.stringify(listaFiis));
+                    renderTable("container-fiis", "FIIs / OUTROS", listaFiis);
+                }
+                document.getElementById(inputId).value = '';
+            }
+        }
+
+        function resetTab2() { 
+            localStorage.removeItem('listaAcoes'); 
+            localStorage.removeItem('listaFiis'); 
+            location.reload(); 
         }
 
         window.onload = () => {
