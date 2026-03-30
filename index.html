@@ -17,6 +17,15 @@
         .tab-content { display: none; flex-grow: 1; flex-direction: column; padding: 10px 15px; overflow: hidden; }
         .tab-content.active { display: flex; }
 
+        #tab2 { overflow-y: auto; }
+        .tables-container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 25px; 
+            justify-content: center; 
+            padding: 20px 0 50px;
+        }
+
         header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 8px; margin-bottom: 8px; flex-shrink: 0; }
         .controls { display: flex; gap: 8px; align-items: center; }
         input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 4px 8px; border-radius: 4px; outline: none; width: 110px; font-size: 0.7rem; }
@@ -29,13 +38,21 @@
 
         .grid-charts { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; flex-grow: 1; min-height: 0; }
         .chart-box { background: var(--card); border-radius: 6px; border: 1px solid #222; display: flex; flex-direction: column; overflow: hidden; }
-        
         .chart-header { background: #18181b; padding: 4px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
         .chart-header span { font-size: 0.65rem; color: var(--accent); font-weight: bold; text-transform: uppercase; }
         .chart-header input { width: 70px; height: 18px; font-size: 0.6rem; background: #000; }
-
         .chart-wrapper { flex-grow: 1; }
-        .widget-wrapper { flex-grow: 1; border: 1px solid #222; border-radius: 8px; overflow: hidden; background: #131722; }
+
+        /* Largura aumentada para 800px conforme solicitado */
+        .widget-wrapper-b3 { 
+            width: 100%;
+            max-width: 800px; 
+            height: 550px; 
+            border: 1px solid #222; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            background: #131722; 
+        }
     </style>
 </head>
 <body>
@@ -65,61 +82,40 @@
     <div id="tab1" class="tab-content active">
         <header>
             <div class="controls">
-                <input type="text" id="inputCard" placeholder="Add Card (Ex: AAPL)">
+                <input type="text" id="inputCard" placeholder="Add Card">
                 <button onclick="addCard()">+</button>
                 <button onclick="resetCards()" style="background:#333">RESET</button>
             </div>
             <div id="live-clock">--:--:--</div>
         </header>
-        
         <div class="grid-cards" id="container-cards"></div>
-
         <div class="grid-charts">
-            <div class="chart-box">
-                <div class="chart-header"><span id="title_1">IBOV</span><input type="text" placeholder="Trocar..." onchange="updateChart(1, this.value)"></div>
-                <div id="tv_chart_1" class="chart-wrapper"></div>
-            </div>
-            <div class="chart-box">
-                <div class="chart-header"><span id="title_2">S&P 500 (Vantage)</span><input type="text" placeholder="Trocar..." onchange="updateChart(2, this.value)"></div>
-                <div id="tv_chart_2" class="chart-wrapper"></div>
-            </div>
-            <div class="chart-box">
-                <div class="chart-header"><span id="title_3">BTC/USD</span><input type="text" placeholder="Trocar..." onchange="updateChart(3, this.value)"></div>
-                <div id="tv_chart_3" class="chart-wrapper"></div>
-            </div>
-            <div class="chart-box">
-                <div class="chart-header"><span id="title_4">IAU (GOLD)</span><input type="text" placeholder="Trocar..." onchange="updateChart(4, this.value)"></div>
-                <div id="tv_chart_4" class="chart-wrapper"></div>
-            </div>
+            <div class="chart-box"><div class="chart-header"><span id="title_1">IBOV</span><input type="text" placeholder="..." onchange="updateChart(1, this.value)"></div><div id="tv_chart_1" class="chart-wrapper"></div></div>
+            <div class="chart-box"><div class="chart-header"><span id="title_2">S&P 500 (Vantage)</span><input type="text" placeholder="..." onchange="updateChart(2, this.value)"></div><div id="tv_chart_2" class="chart-wrapper"></div></div>
+            <div class="chart-box"><div class="chart-header"><span id="title_3">BTC/USD</span><input type="text" placeholder="..." onchange="updateChart(3, this.value)"></div><div id="tv_chart_3" class="chart-wrapper"></div></div>
+            <div class="chart-box"><div class="chart-header"><span id="title_4">IAU (GOLD)</span><input type="text" placeholder="..." onchange="updateChart(4, this.value)"></div><div id="tv_chart_4" class="chart-wrapper"></div></div>
         </div>
     </div>
 
     <div id="tab2" class="tab-content">
         <header>
             <div class="controls">
-                <input type="text" id="inputTable" placeholder="Adicionar Ticker...">
-                <button onclick="addTableTicker()">+</button>
-                <button onclick="resetTable()" style="background:#333">RESET</button>
+                <span style="font-size: 0.8rem; color: var(--accent); font-weight: bold;">CARTEIRA B3: AÇÕES & FIIs</span>
+                <button onclick="location.reload()" style="background:#333">RECARREGAR</button>
             </div>
-            <div style="font-size: 0.7rem; color: #666;">LISTA ATUALIZADA B3</div>
         </header>
-        <div class="widget-wrapper" id="b3-container"></div>
+        <div class="tables-container">
+            <div class="widget-wrapper-b3" id="container-acoes"></div>
+            <div class="widget-wrapper-b3" id="container-fiis"></div>
+        </div>
     </div>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // --- ABA 1 (INTACTA) ---
         let cardsList = JSON.parse(localStorage.getItem('cardsList')) || ["FX_IDC:USDBRL", "BMFBOVESPA:IBOV", "AMEX:EWZ", "BMFBOVESPA:IVVB11", "AMEX:SPY", "BINANCE:BTCUSDT", "BMFBOVESPA:GOLD11"];
         
-        // --- ABA 2 (LISTA ATUALIZADA) ---
-        const defaultTable = [
-            "BMFBOVESPA:ENEV3", "BMFBOVESPA:GGPS3", "BMFBOVESPA:EQTL3", "BMFBOVESPA:ALUP11", 
-            "BMFBOVESPA:RENT3", "BMFBOVESPA:RENT4", "BMFBOVESPA:RDOR3", "BMFBOVESPA:IGTI11", 
-            "BMFBOVESPA:KFOF11", "BMFBOVESPA:HGBS11", "BMFBOVESPA:KDOF11", "BMFBOVESPA:HLOG11", 
-            "BMFBOVESPA:CJCT11", "BMFBOVESPA:PPEI11", "BMFBOVESPA:HRDF11", "BMFBOVESPA:SEED11", 
-            "BMFBOVESPA:BDIV11", "BMFBOVESPA:KNHY11", "BMFBOVESPA:RPRI11", "BMFBOVESPA:CDHY16"
-        ];
-        let tableList = JSON.parse(localStorage.getItem('tableList')) || defaultTable;
+        const listaAcoes = ["BMFBOVESPA:ENEV3", "BMFBOVESPA:GGPS3", "BMFBOVESPA:EQTL3", "BMFBOVESPA:ALUP11", "BMFBOVESPA:RENT3", "BMFBOVESPA:RENT4", "BMFBOVESPA:RDOR3", "BMFBOVESPA:IGTI11"];
+        const listaFiis = ["BMFBOVESPA:KFOF11", "BMFBOVESPA:HGBS11", "BMFBOVESPA:KDOF11", "BMFBOVESPA:HLOG11", "BMFBOVESPA:CJCT11", "BMFBOVESPA:PPEI11", "BMFBOVESPA:HRDF11", "BMFBOVESPA:SEED11", "BMFBOVESPA:BDIV11", "BMFBOVESPA:KNHY11", "BMFBOVESPA:RPRI11", "BMFBOVESPA:CDHY16"];
 
         function openTab(evt, tabName) {
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
@@ -128,17 +124,15 @@
             evt.currentTarget.classList.add('active');
         }
 
-        setInterval(() => {
-            document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('pt-BR');
-        }, 1000);
+        setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
 
         function updateChart(id, ticker) {
             ticker = ticker.toUpperCase().trim();
             if (!ticker) return;
-            let finalTicker = (ticker.length <= 6 && !ticker.includes(':')) ? `BMFBOVESPA:${ticker}` : ticker;
+            let f = (ticker.length <= 6 && !ticker.includes(':')) ? `BMFBOVESPA:${ticker}` : ticker;
             document.getElementById(`title_${id}`).innerText = ticker;
             document.getElementById(`tv_chart_${id}`).innerHTML = ''; 
-            new TradingView.widget({ "autosize": true, "symbol": finalTicker, "interval": "D", "theme": "dark", "style": "1", "locale": "br", "hide_top_toolbar": true, "container_id": `tv_chart_${id}` });
+            new TradingView.widget({ "autosize": true, "symbol": f, "interval": "D", "theme": "dark", "style": "1", "locale": "br", "hide_top_toolbar": true, "container_id": `tv_chart_${id}` });
         }
 
         function renderCards() {
@@ -156,47 +150,24 @@
             });
         }
 
-        function addCard() {
-            const val = document.getElementById('inputCard').value.toUpperCase().trim();
-            if (val) {
-                const formatted = (val.length <= 6 && !val.includes(':')) ? `BMFBOVESPA:${val}` : val;
-                cardsList.push(formatted);
-                localStorage.setItem('cardsList', JSON.stringify(cardsList));
-                renderCards();
-                document.getElementById('inputCard').value = '';
-            }
-        }
-        function resetCards() { localStorage.removeItem('cardsList'); location.reload(); }
-
-        function renderTable() {
-            const container = document.getElementById('b3-container');
+        function renderTable(containerId, title, list) {
+            const container = document.getElementById(containerId);
             container.innerHTML = '';
             const script = document.createElement('script');
             script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js';
             script.async = true;
             script.text = JSON.stringify({
                 "width": "100%", "height": "100%",
-                "symbolsGroups": [{ "name": "Radar B3", "symbols": tableList.map(s => ({"name": s})) }],
+                "symbolsGroups": [{ "name": title, "symbols": list.map(s => ({"name": s})) }],
                 "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "locale": "br"
             });
             container.appendChild(script);
         }
 
-        function addTableTicker() {
-            const val = document.getElementById('inputTable').value.toUpperCase().trim();
-            if (val) {
-                const formatted = val.includes(':') ? val : `BMFBOVESPA:${val}`;
-                tableList.push(formatted);
-                localStorage.setItem('tableList', JSON.stringify(tableList));
-                renderTable();
-                document.getElementById('inputTable').value = '';
-            }
-        }
-        function resetTable() { localStorage.removeItem('tableList'); location.reload(); }
-
         window.onload = () => {
             renderCards();
-            renderTable();
+            renderTable("container-acoes", "AÇÕES", listaAcoes);
+            renderTable("container-fiis", "FIIs / OUTROS", listaFiis);
             updateChart(1, "BMFBOVESPA:IBOV");
             updateChart(2, "VANTAGE:SP500");
             updateChart(3, "BINANCE:BTCUSDT");
