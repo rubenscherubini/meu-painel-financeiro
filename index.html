@@ -18,29 +18,23 @@
         .tab-content.active { display: flex; }
 
         header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 8px; margin-bottom: 8px; flex-shrink: 0; }
+        .controls { display: flex; gap: 8px; align-items: center; }
+        input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 4px 8px; border-radius: 4px; outline: none; width: 110px; font-size: 0.7rem; }
+        button { background: var(--accent); border: none; color: white; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.7rem; }
+        
         #live-clock { font-size: 0.8rem; color: var(--accent); font-weight: bold; font-family: monospace; }
 
-        .grid-cards { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); 
-            gap: 8px; 
-            margin-bottom: 10px; 
-            flex-shrink: 0; 
-        }
-        
-        .card-widget { 
-            background: var(--card); 
-            border-radius: 6px; 
-            overflow: hidden; 
-            border: 1px solid var(--border);
-            height: 82px; 
-        }
+        .grid-cards { display: flex; gap: 8px; margin-bottom: 10px; flex-shrink: 0; overflow-x: auto; padding-bottom: 5px; }
+        .card-widget { min-width: 160px; background: var(--card); border-radius: 6px; overflow: hidden; border: 1px solid var(--border); height: 82px; }
 
         .grid-charts { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; flex-grow: 1; min-height: 0; }
         .chart-box { background: var(--card); border-radius: 6px; border: 1px solid #222; display: flex; flex-direction: column; overflow: hidden; }
-        .chart-header { background: #18181b; padding: 4px 10px; font-size: 0.7rem; color: var(--accent); font-weight: bold; }
-        .chart-wrapper { flex-grow: 1; }
+        
+        .chart-header { background: #18181b; padding: 4px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
+        .chart-header span { font-size: 0.65rem; color: var(--accent); font-weight: bold; text-transform: uppercase; }
+        .chart-header input { width: 70px; height: 18px; font-size: 0.6rem; background: #000; }
 
+        .chart-wrapper { flex-grow: 1; }
         .widget-wrapper { flex-grow: 1; border: 1px solid #222; border-radius: 8px; overflow: hidden; background: #131722; }
     </style>
 </head>
@@ -52,7 +46,7 @@
             <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
             {
                 "symbols": [
-                    {"proName": "FOREXCOM:SPX500", "title": "S&P 500"},
+                    {"proName": "VANTAGE:SP500", "title": "S&P 500"},
                     {"proName": "BINANCE:BTCUSDT", "title": "Bitcoin"},
                     {"proName": "BMFBOVESPA:IBOV", "title": "Ibovespa"},
                     {"proName": "FX_IDC:USDBRL", "title": "USD/BRL"}
@@ -70,27 +64,63 @@
 
     <div id="tab1" class="tab-content active">
         <header>
-            <div style="font-size: 0.7rem; font-weight: bold; color: var(--accent);">MONITOR GLOBAL</div>
+            <div class="controls">
+                <input type="text" id="inputCard" placeholder="Add Card (Ex: AAPL)">
+                <button onclick="addCard()">+</button>
+                <button onclick="resetCards()" style="background:#333">RESET</button>
+            </div>
             <div id="live-clock">--:--:--</div>
         </header>
         
-        <div class="grid-cards">
-            <div class="card-widget" id="c1"></div> <div class="card-widget" id="c2"></div> <div class="card-widget" id="c3"></div> <div class="card-widget" id="c4"></div> <div class="card-widget" id="c5"></div> <div class="card-widget" id="c6"></div> <div class="card-widget" id="c7"></div> </div>
+        <div class="grid-cards" id="container-cards"></div>
 
         <div class="grid-charts">
-            <div class="chart-box"><div class="chart-header">IBOV</div><div id="tv_chart_1" class="chart-wrapper"></div></div>
-            <div class="chart-box"><div class="chart-header">SPY</div><div id="tv_chart_2" class="chart-wrapper"></div></div>
-            <div class="chart-box"><div class="chart-header">BTC/USD</div><div id="tv_chart_3" class="chart-wrapper"></div></div>
-            <div class="chart-box"><div class="chart-header">IAU (Ouro)</div><div id="tv_chart_4" class="chart-wrapper"></div></div>
+            <div class="chart-box">
+                <div class="chart-header"><span id="title_1">IBOV</span><input type="text" placeholder="Trocar..." onchange="updateChart(1, this.value)"></div>
+                <div id="tv_chart_1" class="chart-wrapper"></div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-header"><span id="title_2">S&P 500 (Vantage)</span><input type="text" placeholder="Trocar..." onchange="updateChart(2, this.value)"></div>
+                <div id="tv_chart_2" class="chart-wrapper"></div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-header"><span id="title_3">BTC/USD</span><input type="text" placeholder="Trocar..." onchange="updateChart(3, this.value)"></div>
+                <div id="tv_chart_3" class="chart-wrapper"></div>
+            </div>
+            <div class="chart-box">
+                <div class="chart-header"><span id="title_4">IAU (GOLD)</span><input type="text" placeholder="Trocar..." onchange="updateChart(4, this.value)"></div>
+                <div id="tv_chart_4" class="chart-wrapper"></div>
+            </div>
         </div>
     </div>
 
     <div id="tab2" class="tab-content">
+        <header>
+            <div class="controls">
+                <input type="text" id="inputTable" placeholder="Adicionar Ticker...">
+                <button onclick="addTableTicker()">+</button>
+                <button onclick="resetTable()" style="background:#333">RESET</button>
+            </div>
+            <div style="font-size: 0.7rem; color: #666;">LISTA ATUALIZADA B3</div>
+        </header>
         <div class="widget-wrapper" id="b3-container"></div>
     </div>
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
+        // --- ABA 1 (INTACTA) ---
+        let cardsList = JSON.parse(localStorage.getItem('cardsList')) || ["FX_IDC:USDBRL", "BMFBOVESPA:IBOV", "AMEX:EWZ", "BMFBOVESPA:IVVB11", "AMEX:SPY", "BINANCE:BTCUSDT", "BMFBOVESPA:GOLD11"];
+        
+        // --- ABA 2 (LISTA ATUALIZADA) ---
+        const defaultTable = [
+            "BMFBOVESPA:ENEV3", "BMFBOVESPA:GGPS3", "BMFBOVESPA:EQTL3", "BMFBOVESPA:ALUP11", 
+            "BMFBOVESPA:RENT3", "BMFBOVESPA:RENT4", "BMFBOVESPA:RDOR3", "BMFBOVESPA:IGTI11", 
+            "BMFBOVESPA:KFOF11", "BMFBOVESPA:HGBS11", "BMFBOVESPA:KDOF11", "BMFBOVESPA:HLOG11", 
+            "BMFBOVESPA:CJCT11", "BMFBOVESPA:PPEI11", "BMFBOVESPA:HRDF11", "BMFBOVESPA:SEED11", 
+            "BMFBOVESPA:BDIV11", "BMFBOVESPA:KNHY11", "BMFBOVESPA:RPRI11", "BMFBOVESPA:CDHY16"
+        ];
+        let tableList = JSON.parse(localStorage.getItem('tableList')) || defaultTable;
+
         function openTab(evt, tabName) {
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
             document.querySelectorAll('.tab-button').forEach(tb => tb.classList.remove('active'));
@@ -102,57 +132,75 @@
             document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('pt-BR');
         }, 1000);
 
-        function createCard(id, symbol) {
-            const container = document.getElementById(id);
+        function updateChart(id, ticker) {
+            ticker = ticker.toUpperCase().trim();
+            if (!ticker) return;
+            let finalTicker = (ticker.length <= 6 && !ticker.includes(':')) ? `BMFBOVESPA:${ticker}` : ticker;
+            document.getElementById(`title_${id}`).innerText = ticker;
+            document.getElementById(`tv_chart_${id}`).innerHTML = ''; 
+            new TradingView.widget({ "autosize": true, "symbol": finalTicker, "interval": "D", "theme": "dark", "style": "1", "locale": "br", "hide_top_toolbar": true, "container_id": `tv_chart_${id}` });
+        }
+
+        function renderCards() {
+            const container = document.getElementById('container-cards');
+            container.innerHTML = '';
+            cardsList.forEach((symbol) => {
+                const div = document.createElement('div');
+                div.className = 'card-widget';
+                container.appendChild(div);
+                const script = document.createElement('script');
+                script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
+                script.async = true;
+                script.text = JSON.stringify({ "symbol": symbol, "width": "100%", "colorTheme": "dark", "isTransparent": true, "locale": "br" });
+                div.appendChild(script);
+            });
+        }
+
+        function addCard() {
+            const val = document.getElementById('inputCard').value.toUpperCase().trim();
+            if (val) {
+                const formatted = (val.length <= 6 && !val.includes(':')) ? `BMFBOVESPA:${val}` : val;
+                cardsList.push(formatted);
+                localStorage.setItem('cardsList', JSON.stringify(cardsList));
+                renderCards();
+                document.getElementById('inputCard').value = '';
+            }
+        }
+        function resetCards() { localStorage.removeItem('cardsList'); location.reload(); }
+
+        function renderTable() {
+            const container = document.getElementById('b3-container');
+            container.innerHTML = '';
             const script = document.createElement('script');
-            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
+            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js';
             script.async = true;
             script.text = JSON.stringify({
-                "symbol": symbol,
-                "width": "100%",
-                "colorTheme": "dark",
-                "isTransparent": true,
-                "locale": "br"
+                "width": "100%", "height": "100%",
+                "symbolsGroups": [{ "name": "Radar B3", "symbols": tableList.map(s => ({"name": s})) }],
+                "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "locale": "br"
             });
             container.appendChild(script);
         }
 
+        function addTableTicker() {
+            const val = document.getElementById('inputTable').value.toUpperCase().trim();
+            if (val) {
+                const formatted = val.includes(':') ? val : `BMFBOVESPA:${val}`;
+                tableList.push(formatted);
+                localStorage.setItem('tableList', JSON.stringify(tableList));
+                renderTable();
+                document.getElementById('inputTable').value = '';
+            }
+        }
+        function resetTable() { localStorage.removeItem('tableList'); location.reload(); }
+
         window.onload = () => {
-            // Tickers revisados para máxima compatibilidade
-            createCard("c1", "FX_IDC:USDBRL");
-            createCard("c2", "BMFBOVESPA:IBOV");
-            createCard("c3", "AMEX:EWZ");      // Corrigido para AMEX
-            createCard("c4", "BMFBOVESPA:IVVB11");
-            createCard("c5", "AMEX:SPY");      // Corrigido para AMEX
-            createCard("c6", "BINANCE:BTCUSDT");
-            createCard("c7", "BMFBOVESPA:GOLD11");
-
-            const config = (s) => ({ "autosize": true, "symbol": s, "interval": "D", "theme": "dark", "style": "1", "locale": "br", "hide_top_toolbar": true });
-            new TradingView.widget({...config("BMFBOVESPA:IBOV"), "container_id": "tv_chart_1"});
-            new TradingView.widget({...config("AMEX:SPY"), "container_id": "tv_chart_2"});
-            new TradingView.widget({...config("BINANCE:BTCUSDT"), "container_id": "tv_chart_3"});
-            new TradingView.widget({...config("AMEX:IAU"), "container_id": "tv_chart_4"});
-
-            // Aba 2
-            const b3Container = document.getElementById('b3-container');
-            const b3Script = document.createElement('script');
-            b3Script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js';
-            b3Script.async = true;
-            b3Script.text = JSON.stringify({
-                "width": "100%", "height": "100%",
-                "symbolsGroups": [{ 
-                    "name": "Radar B3", 
-                    "symbols": [
-                        {"name": "BMFBOVESPA:ENEV3"},
-                        {"name": "BMFBOVESPA:GGPS3"},
-                        {"name": "BMFBOVESPA:ALUP11"},
-                        {"name": "BMFBOVESPA:EQTL3"},
-                        {"name": "BMFBOVESPA:RENT3"}
-                    ] 
-                }],
-                "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "locale": "br"
-            });
-            b3Container.appendChild(b3Script);
+            renderCards();
+            renderTable();
+            updateChart(1, "BMFBOVESPA:IBOV");
+            updateChart(2, "VANTAGE:SP500");
+            updateChart(3, "BINANCE:BTCUSDT");
+            updateChart(4, "AMEX:IAU");
         };
     </script>
 </body>
