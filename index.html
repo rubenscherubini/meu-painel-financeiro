@@ -45,9 +45,21 @@
 <body>
 
     <div class="ticker-wrap">
-        <div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-            { "symbols": [{"proName": "VANTAGE:SP500", "title": "S&P 500"},{"proName": "BINANCE:BTCUSDT", "title": "Bitcoin"},{"proName": "BMFBOVESPA:IBOV", "title": "Ibovespa"},{"proName": "FX_IDC:USDBRL", "title": "USD/BRL"}], "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "br" }
-        </script></div>
+        <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            {
+                "symbols": [
+                    {"proName": "VANTAGE:SP500", "title": "S&P 500"},
+                    {"proName": "BINANCE:BTCUSDT", "title": "Bitcoin"},
+                    {"proName": "BMFBOVESPA:IBOV", "title": "Ibovespa"},
+                    {"proName": "FX_IDC:USDBRL", "title": "USD/BRL"},
+                    {"proName": "FX_IDC:EURBRL", "title": "EUR/BRL"}
+                ],
+                "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "br"
+            }
+            </script>
+        </div>
     </div>
 
     <nav>
@@ -57,7 +69,11 @@
 
     <div id="tab1" class="tab-content active">
         <header>
-            <div class="controls"><input type="text" id="inputCard" placeholder="Add Card"><button onclick="addCard()">+</button><button onclick="resetCards()" style="background:#333">RESET</button></div>
+            <div class="controls">
+                <input type="text" id="inputCard" placeholder="Add Card">
+                <button onclick="addCard()">+</button>
+                <button onclick="resetCards()" style="background:#333">RESET</button>
+            </div>
             <div id="live-clock">--:--:--</div>
         </header>
         <div class="grid-cards" id="container-cards"></div>
@@ -72,9 +88,21 @@
     <div id="tab2" class="tab-content">
         <header>
             <div class="controls" style="gap: 20px;">
-                <div class="search-group"><div><div class="search-label">Ações</div><input type="text" id="inputAcoes" placeholder="Ex: PETR4"></div><button onclick="addToTable('acoes')" style="margin-top:12px">+</button></div>
-                <div class="search-group"><div><div class="search-label">FIIs / Outros</div><input type="text" id="inputFiis" placeholder="Ex: HGLG11"></div><button onclick="addToTable('fiis')" style="margin-top:12px">+</button></div>
-                <button onclick="resetTab2()" style="background:#333; height:35px; margin-top:5px">RESET TAB 2</button>
+                <div class="search-group">
+                    <div>
+                        <div class="search-label">Ações</div>
+                        <input type="text" id="inputAcoes" placeholder="Ex: PETR4">
+                    </div>
+                    <button onclick="addToTable('acoes')" style="margin-top: 12px;">+</button>
+                </div>
+                <div class="search-group">
+                    <div>
+                        <div class="search-label">FIIs / Outros</div>
+                        <input type="text" id="inputFiis" placeholder="Ex: HGLG11">
+                    </div>
+                    <button onclick="addToTable('fiis')" style="margin-top: 12px;">+</button>
+                </div>
+                <button onclick="resetTab2()" style="background:#333; height: 35px; margin-top: 5px;">RESET TAB 2</button>
             </div>
         </header>
         <div class="tables-container">
@@ -85,17 +113,13 @@
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // ABA 1
         let cardsList = JSON.parse(localStorage.getItem('cardsList')) || ["FX_IDC:USDBRL", "BMFBOVESPA:IBOV", "AMEX:EWZ", "BMFBOVESPA:IVVB11", "AMEX:SPY", "BINANCE:BTCUSDT", "BMFBOVESPA:GOLD11"];
 
-        // ABA 2 - Listas (HDOF11 Atualizado)
         const defAcoes = ["BMFBOVESPA:ENEV3", "BMFBOVESPA:GGPS3", "BMFBOVESPA:EQTL3", "BMFBOVESPA:ALUP11", "BMFBOVESPA:RENT3", "BMFBOVESPA:RENT4", "BMFBOVESPA:RDOR3", "BMFBOVESPA:IGTI11"];
         const defFiis = ["BMFBOVESPA:KFOF11", "BMFBOVESPA:HGBS11", "BMFBOVESPA:HDOF11", "BMFBOVESPA:HLOG11", "BMFBOVESPA:CJCT11", "BMFBOVESPA:PPEI11", "BMFBOVESPA:HRDF11", "BMFBOVESPA:SEED11", "BMFBOVESPA:BDIV11", "BMFBOVESPA:KNHY11", "BMFBOVESPA:RPRI11", "BMFBOVESPA:CDHY16"];
 
         let listaAcoes = JSON.parse(localStorage.getItem('listaAcoes')) || defAcoes;
         let listaFiis = JSON.parse(localStorage.getItem('listaFiis')) || defFiis;
-
-        // Limpeza de cache para forçar a troca do ticker antigo se ele existir
         listaFiis = listaFiis.map(item => item === "BMFBOVESPA:KDOF11" ? "BMFBOVESPA:HDOF11" : item);
 
         function openTab(evt, tabName) {
@@ -120,47 +144,4 @@
             cardsList.forEach((symbol) => {
                 const div = document.createElement('div'); div.className = 'card-widget'; container.appendChild(div);
                 const script = document.createElement('script'); script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
-                script.async = true; script.text = JSON.stringify({ "symbol": symbol, "width": "100%", "colorTheme": "dark", "isTransparent": true, "locale": "br" });
-                div.appendChild(script);
-            });
-        }
-
-        function addCard() {
-            const val = document.getElementById('inputCard').value.toUpperCase().trim();
-            if (val) {
-                const f = (val.length <= 6 && !val.includes(':')) ? `BMFBOVESPA:${val}` : val;
-                cardsList.push(f); localStorage.setItem('cardsList', JSON.stringify(cardsList)); renderCards();
-                document.getElementById('inputCard').value = '';
-            }
-        }
-        function resetCards() { localStorage.removeItem('cardsList'); location.reload(); }
-
-        function renderTable(containerId, title, list) {
-            const container = document.getElementById(containerId); container.innerHTML = '';
-            const script = document.createElement('script'); script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js';
-            script.async = true; script.text = JSON.stringify({ "width": "100%", "height": "100%", "symbolsGroups": [{ "name": title, "symbols": list.map(s => ({"name": s})) }], "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "locale": "br" });
-            container.appendChild(script);
-        }
-
-        function addToTable(type) {
-            const inputId = type === 'acoes' ? 'inputAcoes' : 'inputFiis';
-            const val = document.getElementById(inputId).value.toUpperCase().trim();
-            if (val) {
-                const f = val.includes(':') ? val : `BMFBOVESPA:${val}`;
-                if (type === 'acoes') { listaAcoes.push(f); localStorage.setItem('listaAcoes', JSON.stringify(listaAcoes)); renderTable("container-acoes", "AÇÕES", listaAcoes); } 
-                else { listaFiis.push(f); localStorage.setItem('listaFiis', JSON.stringify(listaFiis)); renderTable("container-fiis", "FIIs / OUTROS", listaFiis); }
-                document.getElementById(inputId).value = '';
-            }
-        }
-
-        function resetTab2() { localStorage.removeItem('listaAcoes'); localStorage.removeItem('listaFiis'); location.reload(); }
-
-        window.onload = () => {
-            renderCards();
-            renderTable("container-acoes", "AÇÕES", listaAcoes);
-            renderTable("container-fiis", "FIIs / OUTROS", listaFiis);
-            updateChart(1, "BMFBOVESPA:IBOV"); updateChart(2, "VANTAGE:SP500"); updateChart(3, "BINANCE:BTCUSDT"); updateChart(4, "AMEX:IAU");
-        };
-    </script>
-</body>
-</html>
+                script.async = true; script.text = JSON.stringify({ "symbol": symbol, "width": "
