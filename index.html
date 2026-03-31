@@ -51,10 +51,11 @@
             {
                 "symbols": [
                     {"proName": "VANTAGE:SP500", "title": "S&P 500"},
-                    {"proName": "BINANCE:BTCUSDT", "title": "Bitcoin"},
                     {"proName": "BMFBOVESPA:IBOV", "title": "Ibovespa"},
                     {"proName": "FX_IDC:USDBRL", "title": "USD/BRL"},
-                    {"proName": "FX_IDC:EURBRL", "title": "EUR/BRL"}
+                    {"proName": "FX_IDC:EURBRL", "title": "EUR/BRL"},
+                    {"proName": "BINANCE:BTCBRL", "title": "BTC/BRL"},
+                    {"proName": "BINANCE:BTCUSDT", "title": "BTC/USD"}
                 ],
                 "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "br"
             }
@@ -144,4 +145,47 @@
             cardsList.forEach((symbol) => {
                 const div = document.createElement('div'); div.className = 'card-widget'; container.appendChild(div);
                 const script = document.createElement('script'); script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
-                script.async = true; script.text = JSON.stringify({ "symbol": symbol, "width": "
+                script.async = true; script.text = JSON.stringify({ "symbol": symbol, "width": "100%", "colorTheme": "dark", "isTransparent": true, "locale": "br" });
+                div.appendChild(script);
+            });
+        }
+
+        function addCard() {
+            const val = document.getElementById('inputCard').value.toUpperCase().trim();
+            if (val) {
+                const f = (val.length <= 6 && !val.includes(':')) ? `BMFBOVESPA:${val}` : val;
+                cardsList.push(f); localStorage.setItem('cardsList', JSON.stringify(cardsList)); renderCards();
+                document.getElementById('inputCard').value = '';
+            }
+        }
+        function resetCards() { localStorage.removeItem('cardsList'); location.reload(); }
+
+        function renderTable(containerId, title, list) {
+            const container = document.getElementById(containerId); container.innerHTML = '';
+            const script = document.createElement('script'); script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js';
+            script.async = true; script.text = JSON.stringify({ "width": "100%", "height": "100%", "symbolsGroups": [{ "name": title, "symbols": list.map(s => ({"name": s})) }], "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "locale": "br" });
+            container.appendChild(script);
+        }
+
+        function addToTable(type) {
+            const inputId = type === 'acoes' ? 'inputAcoes' : 'inputFiis';
+            const val = document.getElementById(inputId).value.toUpperCase().trim();
+            if (val) {
+                const f = val.includes(':') ? val : `BMFBOVESPA:${val}`;
+                if (type === 'acoes') { listaAcoes.push(f); localStorage.setItem('listaAcoes', JSON.stringify(listaAcoes)); renderTable("container-acoes", "AÇÕES", listaAcoes); } 
+                else { listaFiis.push(f); localStorage.setItem('listaFiis', JSON.stringify(listaFiis)); renderTable("container-fiis", "FIIs / OUTROS", listaFiis); }
+                document.getElementById(inputId).value = '';
+            }
+        }
+
+        function resetTab2() { localStorage.removeItem('listaAcoes'); localStorage.removeItem('listaFiis'); location.reload(); }
+
+        window.onload = () => {
+            renderCards();
+            renderTable("container-acoes", "AÇÕES", listaAcoes);
+            renderTable("container-fiis", "FIIs / OUTROS", listaFiis);
+            updateChart(1, "BMFBOVESPA:IBOV"); updateChart(2, "VANTAGE:SP500"); updateChart(3, "BINANCE:BTCUSDT"); updateChart(4, "AMEX:IAU");
+        };
+    </script>
+</body>
+</html>
