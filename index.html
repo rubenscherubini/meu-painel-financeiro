@@ -39,6 +39,11 @@
         .widget-wrapper-b3 { width: 100%; height: 550px; border: 1px solid #222; border-radius: 8px; overflow: hidden; background: #131722; }
         .tables-container { display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; padding: 10px 0 50px; }
         .table-section { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 800px; }
+
+        /* RODAPÉ ESTILIZADO */
+        footer { background: #0a0a0a; border-top: 1px solid var(--border); padding: 8px 20px; text-align: center; font-size: 0.75rem; flex-shrink: 0; }
+        footer a { color: var(--accent); text-decoration: none; font-weight: bold; margin-left: 5px; }
+        footer a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -103,9 +108,13 @@
         </div>
     </div>
 
+    <footer>
+        Desenvolvido por Rubens Cherubini Alves | 
+        <a href="https://www.instagram.com/acoes.inteligentes" target="_blank">@acoes.inteligentes</a>
+    </footer>
+
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        // CARDS SUPERIORES: Agora usando COINBASE:BTCUSD
         let cardsList = JSON.parse(localStorage.getItem('cardsList')) || ["FX_IDC:USDBRL", "BMFBOVESPA:IBOV", "AMEX:EWZ", "BMFBOVESPA:IVVB11", "AMEX:IVV", "COINBASE:BTCUSD", "BMFBOVESPA:GOLD11"];
         let listaAcoes = JSON.parse(localStorage.getItem('listaAcoes')) || ["BMFBOVESPA:ENEV3", "BMFBOVESPA:GGPS3", "BMFBOVESPA:EQTL3", "BMFBOVESPA:ALUP11", "BMFBOVESPA:RENT3", "BMFBOVESPA:RENT4", "BMFBOVESPA:RDOR3", "BMFBOVESPA:IGTI11"];
         let listaFiis = JSON.parse(localStorage.getItem('listaFiis')) || ["BMFBOVESPA:KFOF11", "BMFBOVESPA:HGBS11", "BMFBOVESPA:HDOF11", "BMFBOVESPA:HLOG11", "BMFBOVESPA:CJCT11", "BMFBOVESPA:PPEI11", "BMFBOVESPA:HRDF11", "BMFBOVESPA:SEED11", "BMFBOVESPA:BDIV11", "BMFBOVESPA:KNHY11", "BMFBOVESPA:RPRI11", "BMFBOVESPA:CDHY16"];
@@ -190,11 +199,8 @@
         function updateChart(id, ticker) {
             ticker = ticker.toUpperCase().trim(); if (!ticker) return;
             let f = (ticker.length <= 6 && !ticker.includes(':')) ? `BMFBOVESPA:${ticker}` : ticker;
-            
-            // Tratamento especial para tickers americanos e Coinbase
             if(["SOYB", "COW", "SPY", "QQQ", "GLD", "COINBASE:BTCUSD"].includes(ticker)) f = ticker;
             if(ticker === "BTCUSD" || ticker === "BTC/USD") f = "COINBASE:BTCUSD";
-
             document.getElementById(`tv_chart_${id}`).innerHTML = ''; 
             new TradingView.widget({ "autosize": true, "symbol": f, "interval": "D", "theme": "dark", "style": "1", "locale": "br", "hide_top_toolbar": true, "container_id": `tv_chart_${id}` });
         }
