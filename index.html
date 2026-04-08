@@ -51,7 +51,7 @@
                 "symbols": [
                     {"proName": "VANTAGE:SP500", "title": "S&P 500"},{"proName": "BMFBOVESPA:IBOV", "title": "Ibovespa"},
                     {"proName": "FX_IDC:USDBRL", "title": "USD/BRL"},{"proName": "FX_IDC:EURBRL", "title": "EUR/BRL"},
-                    {"proName": "BINANCE:BTCBRL", "title": "BTC/BRL"},{"proName": "BINANCE:BTCUSDT", "title": "BTC/USD"}
+                    {"proName": "COINBASE:BTCUSD", "title": "BTC/USD"}
                 ],
                 "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "br"
             }
@@ -74,7 +74,7 @@
         <div class="grid-charts">
             <div class="chart-box"><div class="chart-header"><span id="title_1">IBOV</span><input type="text" onchange="updateChart(1, this.value)"></div><div id="tv_chart_1" class="chart-wrapper"></div></div>
             <div class="chart-box"><div class="chart-header"><span id="title_2">S&P 500</span><input type="text" onchange="updateChart(2, this.value)"></div><div id="tv_chart_2" class="chart-wrapper"></div></div>
-            <div class="chart-box"><div class="chart-header"><span id="title_3">BTC/USD</span><input type="text" onchange="updateChart(3, this.value)"></div><div id="tv_chart_3" class="chart-wrapper"></div></div>
+            <div class="chart-box"><div class="chart-header"><span id="title_3">BTC/USD (COINBASE)</span><input type="text" onchange="updateChart(3, this.value)"></div><div id="tv_chart_3" class="chart-wrapper"></div></div>
             <div class="chart-box"><div class="chart-header"><span id="title_4">SOJA (ETF SOYB)</span><input type="text" onchange="updateChart(4, this.value)"></div><div id="tv_chart_4" class="chart-wrapper"></div></div>
         </div>
     </div>
@@ -105,7 +105,8 @@
 
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
-        let cardsList = JSON.parse(localStorage.getItem('cardsList')) || ["FX_IDC:USDBRL", "BMFBOVESPA:IBOV", "AMEX:EWZ", "BMFBOVESPA:IVVB11", "AMEX:IVV", "BINANCE:BTCUSDT", "BMFBOVESPA:GOLD11"];
+        // CARDS SUPERIORES: Agora usando COINBASE:BTCUSD
+        let cardsList = JSON.parse(localStorage.getItem('cardsList')) || ["FX_IDC:USDBRL", "BMFBOVESPA:IBOV", "AMEX:EWZ", "BMFBOVESPA:IVVB11", "AMEX:IVV", "COINBASE:BTCUSD", "BMFBOVESPA:GOLD11"];
         let listaAcoes = JSON.parse(localStorage.getItem('listaAcoes')) || ["BMFBOVESPA:ENEV3", "BMFBOVESPA:GGPS3", "BMFBOVESPA:EQTL3", "BMFBOVESPA:ALUP11", "BMFBOVESPA:RENT3", "BMFBOVESPA:RENT4", "BMFBOVESPA:RDOR3", "BMFBOVESPA:IGTI11"];
         let listaFiis = JSON.parse(localStorage.getItem('listaFiis')) || ["BMFBOVESPA:KFOF11", "BMFBOVESPA:HGBS11", "BMFBOVESPA:HDOF11", "BMFBOVESPA:HLOG11", "BMFBOVESPA:CJCT11", "BMFBOVESPA:PPEI11", "BMFBOVESPA:HRDF11", "BMFBOVESPA:SEED11", "BMFBOVESPA:BDIV11", "BMFBOVESPA:KNHY11", "BMFBOVESPA:RPRI11", "BMFBOVESPA:CDHY16"];
 
@@ -121,7 +122,6 @@
             {"name": "VIX", "description": "VIX Index"}
         ];
         
-        // ATUALIZAÇÃO: Utilizando ETFs (SOYB e COW) para evitar erros de permissão de dados futuros
         const listCommos = [
             {"name": "DBC", "description": "Commodity Index"},
             {"name": "GLD", "description": "Ouro (ETF)"},
@@ -130,7 +130,7 @@
             {"name": "COW", "description": "Boi Gordo (ETF COW)"},
             {"name": "USO", "description": "Petróleo WTI"},
             {"name": "DBA", "description": "Cesta Agrícola (DBA)"},
-            {"name": "BTCUSD", "description": "Bitcoin"}
+            {"name": "COINBASE:BTCUSD", "description": "Bitcoin (Coinbase)"}
         ];
 
         const listJurosInt = [
@@ -190,9 +190,11 @@
         function updateChart(id, ticker) {
             ticker = ticker.toUpperCase().trim(); if (!ticker) return;
             let f = (ticker.length <= 6 && !ticker.includes(':')) ? `BMFBOVESPA:${ticker}` : ticker;
-            // Exceção para carregar ETFs americanos sem o prefixo B3
-            if(["SOYB", "COW", "SPY", "QQQ", "GLD"].includes(ticker)) f = ticker;
             
+            // Tratamento especial para tickers americanos e Coinbase
+            if(["SOYB", "COW", "SPY", "QQQ", "GLD", "COINBASE:BTCUSD"].includes(ticker)) f = ticker;
+            if(ticker === "BTCUSD" || ticker === "BTC/USD") f = "COINBASE:BTCUSD";
+
             document.getElementById(`tv_chart_${id}`).innerHTML = ''; 
             new TradingView.widget({ "autosize": true, "symbol": f, "interval": "D", "theme": "dark", "style": "1", "locale": "br", "hide_top_toolbar": true, "container_id": `tv_chart_${id}` });
         }
@@ -228,7 +230,7 @@
             renderIndexTable("idx-commos", "COMMODITIES", listCommos);
             renderIndexTable("idx-juros-int", "JUROS INTERNACIONAL", listJurosInt);
             renderIndexTable("idx-juros-br", "JUROS BRASIL", listJurosBr);
-            updateChart(1, "BMFBOVESPA:IBOV"); updateChart(2, "SPY"); updateChart(3, "BTCUSD"); updateChart(4, "SOYB");
+            updateChart(1, "BMFBOVESPA:IBOV"); updateChart(2, "SPY"); updateChart(3, "COINBASE:BTCUSD"); updateChart(4, "SOYB");
         };
     </script>
 </body>
