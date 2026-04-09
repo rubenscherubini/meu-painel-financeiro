@@ -40,7 +40,6 @@
         .tables-container { display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; padding: 10px 0 50px; }
         .table-section { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 800px; }
 
-        /* RODAPÉ ESTILIZADO */
         footer { background: #0a0a0a; border-top: 1px solid var(--border); padding: 8px 20px; text-align: center; font-size: 0.75rem; flex-shrink: 0; }
         footer a { color: var(--accent); text-decoration: none; font-weight: bold; margin-left: 5px; }
         footer a:hover { text-decoration: underline; }
@@ -80,7 +79,7 @@
             <div class="chart-box"><div class="chart-header"><span id="title_1">IBOV</span><input type="text" onchange="updateChart(1, this.value)"></div><div id="tv_chart_1" class="chart-wrapper"></div></div>
             <div class="chart-box"><div class="chart-header"><span id="title_2">S&P 500</span><input type="text" onchange="updateChart(2, this.value)"></div><div id="tv_chart_2" class="chart-wrapper"></div></div>
             <div class="chart-box"><div class="chart-header"><span id="title_3">BTC/USD (COINBASE)</span><input type="text" onchange="updateChart(3, this.value)"></div><div id="tv_chart_3" class="chart-wrapper"></div></div>
-            <div class="chart-box"><div class="chart-header"><span id="title_4">SOJA (ETF SOYB)</span><input type="text" onchange="updateChart(4, this.value)"></div><div id="tv_chart_4" class="chart-wrapper"></div></div>
+            <div class="chart-box"><div class="chart-header"><span id="title_4">OURO (GOLD)</span><input type="text" onchange="updateChart(4, this.value)"></div><div id="tv_chart_4" class="chart-wrapper"></div></div>
         </div>
     </div>
 
@@ -199,8 +198,11 @@
         function updateChart(id, ticker) {
             ticker = ticker.toUpperCase().trim(); if (!ticker) return;
             let f = (ticker.length <= 6 && !ticker.includes(':')) ? `BMFBOVESPA:${ticker}` : ticker;
-            if(["SOYB", "COW", "SPY", "QQQ", "GLD", "COINBASE:BTCUSD"].includes(ticker)) f = ticker;
+            
+            // Tratamento especial para SP500, Gold e Coinbase
+            if(["VANTAGE:SP500", "GOLD", "COINBASE:BTCUSD", "SOYB", "COW"].includes(ticker)) f = ticker;
             if(ticker === "BTCUSD" || ticker === "BTC/USD") f = "COINBASE:BTCUSD";
+
             document.getElementById(`tv_chart_${id}`).innerHTML = ''; 
             new TradingView.widget({ "autosize": true, "symbol": f, "interval": "D", "theme": "dark", "style": "1", "locale": "br", "hide_top_toolbar": true, "container_id": `tv_chart_${id}` });
         }
@@ -236,7 +238,7 @@
             renderIndexTable("idx-commos", "COMMODITIES", listCommos);
             renderIndexTable("idx-juros-int", "JUROS INTERNACIONAL", listJurosInt);
             renderIndexTable("idx-juros-br", "JUROS BRASIL", listJurosBr);
-            updateChart(1, "BMFBOVESPA:IBOV"); updateChart(2, "SPY"); updateChart(3, "COINBASE:BTCUSD"); updateChart(4, "SOYB");
+            updateChart(1, "BMFBOVESPA:IBOV"); updateChart(2, "VANTAGE:SP500"); updateChart(3, "COINBASE:BTCUSD"); updateChart(4, "GOLD");
         };
     </script>
 </body>
