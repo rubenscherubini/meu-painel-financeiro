@@ -5,226 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wealth Monitor - Rubens Cherubini Alves</title>
     <style>
-        :root {
-            --bg: #EFEEEA;
-            --card: #FFFFFF;
-            --ink: #141412;
-            --ink2: #3A3833;
-            --ink3: #5C5A53;
-            --line: #D6D4CD;
-            --sil1: #C9C9C4;
-            --sil2: #9C9C95;
-            --sil3: #7A7A72;
-            --steel: #2F3B49;
-            --pos: #146B43; 
-            --posbg: #E8F2EC;
-            --neg: #A32B1E; 
-            --negbg: #FAEBE8;
-            --gold: #B08A2E; 
-            --goldbg: #FBF7EC;
-            --fs: 1;
-        }
+        :root { --bg: #050505; --card: #111; --accent: #5d3fd3; --text: #e0e0e0; --border: #222; }
+        body { background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-        body { 
-            background-color: var(--bg); 
-            color: var(--ink); 
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-            overflow: hidden; 
-        }
+        .ticker-wrap { height: 40px; background: #000; border-bottom: 1px solid var(--border); flex-shrink: 0; }
 
-        .ticker-wrap { 
-            height: 40px; 
-            background: var(--card); 
-            border-bottom: 1px solid var(--line); 
-            flex-shrink: 0; 
-        }
+        nav { display: flex; background: #0f0f0f; border-bottom: 1px solid var(--border); padding: 10px 20px 0; gap: 8px; flex-shrink: 0; }
+        .tab-button { background: #1a1a1a; border: 1px solid var(--border); border-bottom: none; color: #888; padding: 8px 16px; cursor: pointer; border-radius: 6px 6px 0 0; font-size: 0.75rem; font-weight: bold; text-transform: uppercase; }
+        .tab-button.active { background: var(--accent); color: white; border-color: var(--accent); }
 
-        nav { 
-            display: flex; 
-            background: var(--bg); 
-            border-bottom: 1px solid var(--line); 
-            padding: 8px 20px 0; 
-            gap: 6px; 
-            flex-shrink: 0; 
-        }
-        .tab-button { 
-            background: var(--sil1); 
-            border: 1px solid var(--line); 
-            border-bottom: none; 
-            color: var(--ink2); 
-            padding: 8px 16px; 
-            cursor: pointer; 
-            border-radius: 6px 6px 0 0; 
-            font-size: calc(0.75rem * var(--fs)); 
-            font-weight: 600; 
-            text-transform: uppercase;
-            transition: all 0.2s ease;
-        }
-        .tab-button.active { 
-            background: var(--steel); 
-            color: #FFFFFF; 
-            border-color: var(--steel); 
-        }
-
-        .tab-content { 
-            display: none; 
-            flex-grow: 1; 
-            flex-direction: column; 
-            padding: 12px 20px; 
-            overflow-y: auto; 
-        }
+        .tab-content { display: none; flex-grow: 1; flex-direction: column; padding: 10px 15px; overflow-y: auto; }
         .tab-content.active { display: flex; }
 
-        header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 1px solid var(--line); 
-            padding-bottom: 8px; 
-            margin-bottom: 10px; 
-            flex-shrink: 0; 
-        }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; padding-bottom: 8px; margin-bottom: 8px; flex-shrink: 0; }
         .controls { display: flex; gap: 8px; align-items: center; }
-        input { 
-            background: var(--card); 
-            border: 1px solid var(--line); 
-            color: var(--ink); 
-            padding: 6px 10px; 
-            border-radius: 4px; 
-            outline: none; 
-            width: 120px; 
-            font-size: calc(0.75rem * var(--fs)); 
-        }
-        input:focus { border-color: var(--steel); }
-
-        button { 
-            background: var(--steel); 
-            border: none; 
-            color: white; 
-            padding: 6px 12px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-weight: 600; 
-            font-size: calc(0.75rem * var(--fs)); 
-            transition: opacity 0.2s;
-        }
-        button:hover { opacity: 0.9; }
+        input { background: #1a1a1a; border: 1px solid #333; color: white; padding: 4px 8px; border-radius: 4px; outline: none; width: 110px; font-size: 0.7rem; }
+        button { background: var(--accent); border: none; color: white; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.7rem; }
         
-        #live-clock { 
-            font-size: calc(0.85rem * var(--fs)); 
-            color: var(--steel); 
-            font-weight: bold; 
-            font-family: monospace; 
-        }
+        #live-clock { font-size: 0.8rem; color: var(--accent); font-weight: bold; font-family: monospace; }
 
-        .grid-indices { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            grid-template-rows: auto auto; 
-            gap: 16px; 
-            padding-bottom: 20px; 
-        }
-        .widget-index-box { 
-            height: 420px; 
-            border: 1px solid var(--line); 
-            border-radius: 8px; 
-            overflow: hidden; 
-            background: var(--card); 
-        }
+        .grid-indices { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 20px; padding-bottom: 40px; }
+        .widget-index-box { height: 450px; border: 1px solid #222; border-radius: 8px; overflow: hidden; background: #131722; }
         
-        .grid-cards { 
-            display: flex; 
-            gap: 10px; 
-            margin-bottom: 10px; 
-            flex-shrink: 0; 
-            overflow-x: auto; 
-            padding-bottom: 5px; 
-        }
-        .card-widget { 
-            min-width: 160px; 
-            background: var(--card); 
-            border-radius: 6px; 
-            overflow: hidden; 
-            border: 1px solid var(--line); 
-            height: 82px; 
-        }
+        .grid-cards { display: flex; gap: 8px; margin-bottom: 10px; flex-shrink: 0; overflow-x: auto; padding-bottom: 5px; }
+        .card-widget { min-width: 160px; background: var(--card); border-radius: 6px; overflow: hidden; border: 1px solid var(--border); height: 82px; }
 
-        .grid-charts { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            grid-template-rows: 1fr 1fr; 
-            gap: 12px; 
-            flex-grow: 1; 
-            min-height: 0; 
-        }
-        .chart-box { 
-            background: var(--card); 
-            border-radius: 6px; 
-            border: 1px solid var(--line); 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
-        }
-        .chart-header { 
-            background: var(--card); 
-            padding: 6px 12px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border-bottom: 1px solid var(--line); 
-        }
-        .chart-header span { 
-            font-size: calc(0.7rem * var(--fs)); 
-            color: var(--ink3); 
-            font-weight: 700; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px;
-        }
+        .grid-charts { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; flex-grow: 1; min-height: 0; }
+        .chart-box { background: var(--card); border-radius: 6px; border: 1px solid #222; display: flex; flex-direction: column; overflow: hidden; }
+        .chart-header { background: #18181b; padding: 4px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
+        .chart-header span { font-size: 0.65rem; color: var(--accent); font-weight: bold; text-transform: uppercase; }
         .chart-wrapper { flex-grow: 1; }
 
-        .widget-wrapper-b3 { 
-            width: 100%; 
-            height: 500px; 
-            border: 1px solid var(--line); 
-            border-radius: 8px; 
-            overflow: hidden; 
-            background: var(--card); 
-        }
-        .tables-container { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 20px; 
-            justify-content: center; 
-            padding: 10px 0 20px; 
-        }
-        .table-section { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 8px; 
-            width: 100%; 
-            max-width: 800px; 
-        }
+        .widget-wrapper-b3 { width: 100%; height: 550px; border: 1px solid #222; border-radius: 8px; overflow: hidden; background: #131722; }
+        .tables-container { display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; padding: 10px 0 50px; }
+        .table-section { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 800px; }
 
-        footer { 
-            background: var(--card); 
-            border-top: 1px solid var(--line); 
-            padding: 8px 20px; 
-            text-align: center; 
-            font-size: calc(0.75rem * var(--fs)); 
-            color: var(--ink2);
-            flex-shrink: 0; 
-        }
-        footer a { 
-            color: var(--steel); 
-            text-decoration: none; 
-            font-weight: 600; 
-            margin-left: 4px; 
-        }
+        footer { background: #0a0a0a; border-top: 1px solid var(--border); padding: 8px 20px; text-align: center; font-size: 0.75rem; flex-shrink: 0; }
+        footer a { color: var(--accent); text-decoration: none; font-weight: bold; margin-left: 5px; }
         footer a:hover { text-decoration: underline; }
     </style>
 </head>
@@ -236,17 +53,11 @@
             <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
             {
                 "symbols": [
-                    {"proName": "VANTAGE:SP500", "title": "S&P 500"},
-                    {"proName": "BMFBOVESPA:IBOV", "title": "Ibovespa"},
-                    {"proName": "FX_IDC:USDBRL", "title": "USD/BRL"},
-                    {"proName": "FX_IDC:EURBRL", "title": "EUR/BRL"},
-                    {"proName": "COINBASE:BTCUSD", "title": "BTC/USD"}
+                    {"proName": "VANTAGE:SP500", "title": "S&P 500"},{"proName": "BMFBOVESPA:IBOV", "title": "Ibovespa"},
+                    {"proName": "FX_IDC:USDBRL", "title": "USD/BRL"},{"proName": "FX_IDC:EURBRL", "title": "EUR/BRL"},{"proName": "FX_IDC:USDUYU", "title": "USD/UYU"},{"proName": "FX_IDC:UYUBRL", "title": "UYU/BRL"},
+                    {"proName": "COINBASE:BTCUSD", "title": "BTC/USD"},{"proName": "BINANCE:BTCBRL", "title": "BTC/BRL"}
                 ],
-                "showSymbolLogo": true, 
-                "colorTheme": "light", 
-                "isTransparent": true, 
-                "displayMode": "adaptive", 
-                "locale": "br"
+                "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "displayMode": "adaptive", "locale": "br"
             }
             </script>
         </div>
@@ -260,11 +71,7 @@
 
     <div id="tab1" class="tab-content active">
         <header>
-            <div class="controls">
-                <input type="text" id="inputCard" placeholder="Add Card">
-                <button onclick="addCard()">+</button>
-                <button onclick="resetCards()" style="background: var(--sil3);">RESET</button>
-            </div>
+            <div class="controls"><input type="text" id="inputCard" placeholder="Add Card"><button onclick="addCard()">+</button><button onclick="resetCards()" style="background:#333">RESET</button></div>
             <div id="live-clock">--:--:--</div>
         </header>
         <div class="grid-cards" id="container-cards"></div>
@@ -277,32 +84,21 @@
     </div>
 
     <div id="tab2" class="tab-content">
-        <header>
-            <div class="controls">
-                <span style="font-size:0.8rem; color: var(--steel); font-weight:bold;">AÇÕES & FIIs</span>
-                <button onclick="resetTab2()" style="background: var(--sil3);">RESET DEFAULT</button>
-            </div>
-        </header>
+        <header><div class="controls"><span style="font-size:0.8rem; color:var(--accent); font-weight:bold;">AÇÕES & FIIs</span><button onclick="resetTab2()" style="background:#333">RESET DEFAULT</button></div></header>
         <div class="tables-container">
             <div class="table-section">
-                <div class="controls">
-                    <input type="text" id="inputAcao" placeholder="Adicionar Ação">
-                    <button onclick="addToTable('acoes')">+</button>
-                </div>
+                <div class="controls"><input type="text" id="inputAcao" placeholder="Adicionar Ação"><button onclick="addToTable('acoes')">+</button></div>
                 <div class="widget-wrapper-b3" id="container-acoes"></div>
             </div>
             <div class="table-section">
-                <div class="controls">
-                    <input type="text" id="inputFii" placeholder="Adicionar FII">
-                    <button onclick="addToTable('fiis')">+</button>
-                </div>
+                <div class="controls"><input type="text" id="inputFii" placeholder="Adicionar FII"><button onclick="addToTable('fiis')">+</button></div>
                 <div class="widget-wrapper-b3" id="container-fiis"></div>
             </div>
         </div>
     </div>
 
     <div id="tab3" class="tab-content">
-        <header><span style="font-size:0.8rem; color: var(--steel); font-weight:bold;">MACRO INDICATORS - GLOBAL VIEW</span></header>
+        <header><span style="font-size:0.8rem; color:var(--accent); font-weight:bold;">MACRO INDICATORS - GLOBAL VIEW</span></header>
         <div class="grid-indices">
             <div class="widget-index-box" id="idx-equity"></div>
             <div class="widget-index-box" id="idx-commos"></div>
@@ -319,7 +115,7 @@
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <script>
         let cardsList = JSON.parse(localStorage.getItem('cardsList')) || ["FX_IDC:USDBRL", "BMFBOVESPA:IBOV", "AMEX:EWZ", "BMFBOVESPA:IVVB11", "AMEX:IVV", "COINBASE:BTCUSD", "BMFBOVESPA:GOLD11"];
-        let listaAcoes = JSON.parse(localStorage.getItem('listaAcoes')) || ["BMFBOVESPA:ENEV3", "BMFBOVESPA:GGPS3", "BMFBOVESPA:EQTL3", "BMFBOVESPA:ALUP11", "BMFBOVESPA:RENT3", "BMFBOVESPA:RENT4", "BMFBOVESPA:RDOR3", "BMFBOVESPA:IGTI11", "BMFBOVESPA:TTEN3", "BMFBOVESPA:DIVO11", "BMFBOVESPA:NSDV11", "BMFBOVESPA:LVOL11"];
+        let listaAcoes = JSON.parse(localStorage.getItem('listaAcoes')) || ["BMFBOVESPA:ENEV3", "BMFBOVESPA:PASS3", "BMFBOVESPA:GGPS3", "BMFBOVESPA:EQTL3", "BMFBOVESPA:ALUP11", "BMFBOVESPA:RENT3", "BMFBOVESPA:RDOR3", "BMFBOVESPA:IGTI11", "BMFBOVESPA:TTEN3", "BMFBOVESPA:PETR4", "BMFBOVESPA:BOVA11", "BMFBOVESPA:NSDV11", "BMFBOVESPA:LVOL11", "BMFBOVESPA:DIVO11"];
         let listaFiis = JSON.parse(localStorage.getItem('listaFiis')) || ["BMFBOVESPA:KFOF11", "BMFBOVESPA:HGBS11", "BMFBOVESPA:HDOF11", "BMFBOVESPA:HLOG11", "BMFBOVESPA:CJCT11", "BMFBOVESPA:PPEI11", "BMFBOVESPA:HRDF11", "BMFBOVESPA:SEED11", "BMFBOVESPA:BDIV11", "BMFBOVESPA:KNHY11", "BMFBOVESPA:RPRI11"];
 
         const listEquity = [
@@ -336,12 +132,13 @@
         
         const listCommos = [
             {"name": "DBC", "description": "Commodity Index"},
-            {"name": "TVC:GOLD", "description": "Ouro (Onça)"},
             {"name": "CPER", "description": "Cobre (Metal Base)"},
             {"name": "SOYB", "description": "Soja (ETF SOYB)"},
             {"name": "COW", "description": "Boi Gordo (ETF COW)"},
-            {"name": "USO", "description": "Petróleo WTI"},
+            {"name": "TVC:UKOIL", "description": "Petróleo Brent"},
             {"name": "DBA", "description": "Cesta Agrícola (DBA)"},
+            {"name": "DXY", "description": "Dólar Index"},
+            {"name": "TVC:GOLD", "description": "Ouro (US$ / OZ)"},
             {"name": "COINBASE:BTCUSD", "description": "Bitcoin (Coinbase)"}
         ];
 
@@ -353,14 +150,13 @@
             {"name": "TIP", "description": "Inflação/Real (TIP)"},
             {"name": "LQD", "description": "Investment Grade"},
             {"name": "HYG", "description": "High Yield"},
-            {"name": "DXY", "description": "Dólar Index"}
         ];
 
         const listJurosBr = [
-            {"name": "DI1F2025", "description": "DI 2027"},
-            {"name": "DI1F2027", "description": "DI 2029"},
-            {"name": "DI1F2029", "description": "DI 2031"},
-            {"name": "DI1F2031", "description": "DI 2033"},
+            {"name": "DI1F2025", "description": "DI 2025"},
+            {"name": "DI1F2027", "description": "DI 2027"},
+            {"name": "DI1F2029", "description": "DI 2029"},
+            {"name": "DI1F2031", "description": "DI 2031"},
             {"name": "B5P211", "description": "B5P2 (IMA-B Curto)"},
             {"name": "IMAB11", "description": "IMAB11 (IMA-B)"},
             {"name": "B5MB11", "description": "B5MB (IMA-B Longo)"}
@@ -376,19 +172,10 @@
         function renderIndexTable(containerId, title, list) {
             const container = document.getElementById(containerId);
             if(!container) return; container.innerHTML = '';
-            const script = document.createElement('script'); 
-            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js';
+            const script = document.createElement('script'); script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-market-quotes.js';
             script.async = true;
             const symbols = list.map(item => ({"name": item.name, "displayName": item.description}));
-            script.text = JSON.stringify({ 
-                "width": "100%", 
-                "height": "100%", 
-                "symbolsGroups": [{ "name": title, "symbols": symbols }], 
-                "showSymbolLogo": true, 
-                "colorTheme": "light", 
-                "isTransparent": true, 
-                "locale": "br" 
-            });
+            script.text = JSON.stringify({ "width": "100%", "height": "100%", "symbolsGroups": [{ "name": title, "symbols": symbols }], "showSymbolLogo": true, "colorTheme": "dark", "isTransparent": true, "locale": "br" });
             container.appendChild(script);
         }
 
@@ -412,20 +199,12 @@
             ticker = ticker.toUpperCase().trim(); if (!ticker) return;
             let f = (ticker.length <= 6 && !ticker.includes(':')) ? `BMFBOVESPA:${ticker}` : ticker;
             
+            // Tratamento especial para SP500, Gold e Coinbase
             if(["VANTAGE:SP500", "GOLD", "COINBASE:BTCUSD", "SOYB", "COW"].includes(ticker)) f = ticker;
             if(ticker === "BTCUSD" || ticker === "BTC/USD") f = "COINBASE:BTCUSD";
 
             document.getElementById(`tv_chart_${id}`).innerHTML = ''; 
-            new TradingView.widget({ 
-                "autosize": true, 
-                "symbol": f, 
-                "interval": "D", 
-                "theme": "light", 
-                "style": "1", 
-                "locale": "br", 
-                "hide_top_toolbar": true, 
-                "container_id": `tv_chart_${id}` 
-            });
+            new TradingView.widget({ "autosize": true, "symbol": f, "interval": "D", "theme": "dark", "style": "1", "locale": "br", "hide_top_toolbar": true, "container_id": `tv_chart_${id}` });
         }
 
         function renderCards() {
@@ -433,14 +212,7 @@
             cardsList.forEach((symbol) => {
                 const div = document.createElement('div'); div.className = 'card-widget'; container.appendChild(div);
                 const script = document.createElement('script'); script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
-                script.async = true; 
-                script.text = JSON.stringify({ 
-                    "symbol": symbol, 
-                    "width": "100%", 
-                    "colorTheme": "light", 
-                    "isTransparent": true, 
-                    "locale": "br" 
-                });
+                script.async = true; script.text = JSON.stringify({ "symbol": symbol, "width": "100%", "colorTheme": "dark", "isTransparent": true, "locale": "br" });
                 div.appendChild(script);
             });
         }
