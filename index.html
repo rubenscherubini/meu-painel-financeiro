@@ -11,7 +11,6 @@
     
     <style>
         :root {
-            /* Paleta Équora - Full Deep Night Style */
             --deep-night: #1C2632;      /* Fundo Principal */
             --deep-night-card: #131B24; /* Containers e Cards */
             --terra-cotta: #7D3915;     /* Acentos Fortes e Destaques Primários */
@@ -36,7 +35,22 @@
 
         .ticker-wrap { height: 40px; background: #111720; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
 
-        nav { display: flex; background: #111720; border-bottom: 2px solid var(--terra-cotta); padding: 10px 20px 0; gap: 8px; flex-shrink: 0; }
+        /* Barra de navegação adaptada para conter o relógio global à direita */
+        nav { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-end; 
+            background: #111720; 
+            border-bottom: 2px solid var(--terra-cotta); 
+            padding: 10px 20px 0; 
+            flex-shrink: 0; 
+        }
+
+        .nav-tabs-group {
+            display: flex;
+            gap: 8px;
+        }
+
         .tab-button { 
             background: rgba(255, 255, 255, 0.05); 
             border: 1px solid var(--border-color); 
@@ -56,6 +70,14 @@
             color: #FFFFFF; 
             border-color: var(--terra-cotta); 
             font-weight: 600;
+        }
+
+        #live-clock { 
+            font-size: 0.85rem; 
+            color: var(--soft-gold); 
+            font-weight: 600; 
+            font-family: 'Poppins', monospace; 
+            padding-bottom: 8px;
         }
 
         .tab-content { display: none; flex-grow: 1; flex-direction: column; padding: 12px 18px; overflow-y: auto; }
@@ -89,8 +111,6 @@
             transition: background 0.2s ease;
         }
         button:hover { background: var(--burnt-sienna); }
-        
-        #live-clock { font-size: 0.85rem; color: var(--soft-gold); font-weight: 600; font-family: 'Poppins', monospace; }
 
         .grid-indices { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 15px; padding-bottom: 40px; }
         .widget-index-box { height: 450px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--deep-night-card); }
@@ -105,7 +125,6 @@
         .chart-header input { background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: #FFFFFF; padding: 2px 6px; width: 90px; }
         .chart-wrapper { flex-grow: 1; }
 
-        /* Altura expandida para 780px acomodando todos os ativos da B3 */
         .widget-wrapper-b3 { width: 100%; height: 780px; border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: var(--deep-night-card); }
         .tables-container { display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; padding: 10px 0 50px; }
         .table-section { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 800px; }
@@ -141,16 +160,20 @@
         </div>
     </div>
 
+    <!-- Navegação com relógio integrado no canto superior direito (visível em todas as abas) -->
     <nav>
-        <button class="tab-button active" onclick="openTab(event, 'tab1')">Wealth Monitor</button>
-        <button class="tab-button" onclick="openTab(event, 'tab2')">Carteira B3</button>
-        <button class="tab-button" onclick="openTab(event, 'tab3')">Índices Mercado</button>
+        <div class="nav-tabs-group">
+            <button class="tab-button active" onclick="openTab(event, 'tab1')">Wealth Monitor</button>
+            <button class="tab-button" onclick="openTab(event, 'tab2')">Carteira B3</button>
+            <button class="tab-button" onclick="openTab(event, 'tab3')">Índices Mercado</button>
+        </div>
+        <div id="live-clock">--:--:--</div>
     </nav>
 
     <div id="tab1" class="tab-content active">
         <header>
             <div class="controls"><input type="text" id="inputCard" placeholder="Add Card"><button onclick="addCard()">+</button><button onclick="resetCards()" style="background:#111720">RESET</button></div>
-            <div id="live-clock">--:--:--</div>
+            <span style="font-size:0.75rem; color:var(--text-muted);">Acompanhamento em tempo real</span>
         </header>
         <div class="grid-cards" id="container-cards"></div>
         <div class="grid-charts">
@@ -194,7 +217,7 @@
     <script>
         let cardsList = JSON.parse(localStorage.getItem('cardsList')) || ["FX_IDC:USDBRL", "BMFBOVESPA:IBOV", "AMEX:EWZ", "BMFBOVESPA:IVVB11", "AMEX:IVV", "COINBASE:BTCUSD", "BMFBOVESPA:GOLD11"];
         let listaAcoes = JSON.parse(localStorage.getItem('listaAcoes')) || ["BMFBOVESPA:ENEV3", "BMFBOVESPA:PASS3", "BMFBOVESPA:GGPS3", "BMFBOVESPA:EQTL3", "BMFBOVESPA:ALUP11", "BMFBOVESPA:RENT3", "BMFBOVESPA:RDOR3", "BMFBOVESPA:IGTI11", "BMFBOVESPA:TTEN3", "BMFBOVESPA:PETR4", "BMFBOVESPA:BOVA11", "BMFBOVESPA:NSDV11", "BMFBOVESPA:LVOL11", "BMFBOVESPA:DIVO11"];
-        let listaFiis = JSON.parse(localStorage.getItem('listaFiis')) || ["BMFBOVESPA:KFOF11", "BMFBOVESPA:HGBS11", "BMFBOVESPA:HDOF11", "BMFBOVESPA:HLOG11", "BMFBOVESPA:CJCT11", "BMFBOVESPA:PPEI11", "BMFBOVESPA:HRDF11", "BMFBOVESPA:SEED11", "BMFBOVESPA:BDIV11", "BMFBOVESPA:KNHY11", "BMFBOVESPA:RPRI11"];
+        let listaFiis = JSON.parse(localStorage.getItem('listaFiis')) || ["BMFBOVESPA:KFOF11", "BMFBOVESPA:HGBS11", "BMFBOVESPA:HDOF11", "BMFBOVESPA:HLOG11", "BMFBOVESPA:CJCT11", "BMFBOVESPA:PPEI11", "BMFBOVESPA:HRDF11", "BMFBOVESPA:SEED11", "BMFBOVESPA:BDIV11", "BMFBOVESPA:KNHY11", "BMFBOVESPA:RPRI11", "BMFBOVESPA:KDIF11"];
 
         const listEquity = [
             {"name": "IBOV", "description": "Ibovespa"},
@@ -228,7 +251,6 @@
             {"name": "US20Y", "description": "Treasury 20Y"},
             {"name": "DFII10", "description": "Inflação/Real (TIP)"},
             {"name": "LQD", "description": "Investment Grade"},
-            {"name": "LQD", "description": "Investment Grade"},
             {"name": "HYG", "description": "High Yield"}
         ];
 
@@ -240,8 +262,7 @@
             {"name": "BR10Y", "description": "DI 10Y"},
             {"name": "B5P211", "description": "B5P2 (IMA-B Curto)"},
             {"name": "IMAB11", "description": "IMAB11 (IMA-B)"},
-            {"name": "B5MB11", "description": "B5MB (IMA-B Longo)"}
-        ];
+            {"name": "B5MB11", "description": "B5MB (IMA-B Longo)"}        ];
 
         function openTab(evt, tabName) {
             document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
@@ -308,7 +329,12 @@
 
         function resetCards() { localStorage.removeItem('cardsList'); location.reload(); }
         function resetTab2() { localStorage.removeItem('listaAcoes'); localStorage.removeItem('listaFiis'); location.reload(); }
-        setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleTimeString('pt-BR'); }, 1000);
+        
+        // Atualização contínua do relógio global
+        setInterval(() => { 
+            const clockEl = document.getElementById('live-clock');
+            if(clockEl) clockEl.innerText = new Date().toLocaleTimeString('pt-BR'); 
+        }, 1000);
 
         window.onload = () => {
             renderCards();
